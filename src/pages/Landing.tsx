@@ -1,9 +1,10 @@
-import { Link } from "react-router-dom";
-import { Heart, Users, FileText, Calendar, Shield, Activity } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Heart, Users, FileText, Calendar, Shield, Activity, ArrowRight, Clock, Stethoscope } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 const Landing = () => {
+  const navigate = useNavigate();
   const features = [
     {
       icon: Users,

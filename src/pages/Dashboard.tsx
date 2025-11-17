@@ -1,7 +1,10 @@
-import { Users, FileText, Calendar, Heart, TrendingUp, Activity } from "lucide-react";
+import { Users, FileText, Calendar, Heart, TrendingUp, Activity, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const stats = [
     {
       title: "Total Patients",
@@ -50,18 +53,20 @@ const Dashboard = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, index) => (
-          <Card key={index} className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+          <Card key={index} className="hover:shadow-xl hover:scale-105 transition-all duration-300 border-l-4 border-l-medical-primary bg-gradient-to-br from-card to-accent/5">
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
                 {stat.title}
               </CardTitle>
-              <stat.icon className={`h-5 w-5 ${stat.color}`} />
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-medical-primary/10 to-medical-secondary/10 flex items-center justify-center">
+                <stat.icon className={`h-6 w-6 ${stat.color}`} />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <div className="flex items-center gap-1 text-sm text-success">
+              <div className="text-3xl font-bold mb-2">{stat.value}</div>
+              <div className="flex items-center gap-1 text-sm text-success font-medium">
                 <TrendingUp className="h-4 w-4" />
                 <span>{stat.change} from last month</span>
               </div>
@@ -71,58 +76,73 @@ const Dashboard = () => {
       </div>
 
       {/* Recent Activity */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card className="border-t-4 border-t-medical-primary shadow-lg">
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+            <CardTitle className="text-xl">Recent Activity</CardTitle>
             <CardDescription>Latest patient interactions and updates</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {recentActivity.map((activity, index) => (
-                <div key={index} className="flex items-start gap-3 pb-4 border-b last:border-0 last:pb-0">
-                  <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Activity className="h-4 w-4 text-primary" />
+                <div key={index} className="flex items-start gap-4 pb-4 border-b last:border-0 last:pb-0 hover:bg-accent/50 p-2 rounded-lg transition-colors">
+                  <div className="h-11 w-11 rounded-full bg-gradient-to-br from-medical-primary/20 to-medical-secondary/20 flex items-center justify-center flex-shrink-0">
+                    <Activity className="h-5 w-5 text-medical-primary" />
                   </div>
                   <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium">{activity.patient}</p>
+                    <p className="text-sm font-semibold">{activity.patient}</p>
                     <p className="text-sm text-muted-foreground">{activity.action}</p>
                   </div>
-                  <span className="text-xs text-muted-foreground">{activity.time}</span>
+                  <span className="text-xs text-muted-foreground font-medium">{activity.time}</span>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-t-4 border-t-medical-secondary shadow-lg">
           <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
+            <CardTitle className="text-xl">Quick Actions</CardTitle>
             <CardDescription>Common tasks and shortcuts</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-3">
-              <button className="flex items-center gap-3 p-3 rounded-lg border hover:bg-accent transition-colors text-left">
-                <Users className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-medium text-sm">Add New Patient</p>
+            <div className="grid gap-4">
+              <Button 
+                variant="outline" 
+                className="h-auto p-4 justify-start hover:border-medical-primary hover:bg-medical-primary/5"
+                onClick={() => navigate('/patients')}
+              >
+                <Users className="h-6 w-6 text-medical-primary mr-3 flex-shrink-0" />
+                <div className="text-left">
+                  <p className="font-semibold text-base">Add New Patient</p>
                   <p className="text-xs text-muted-foreground">Register a new patient record</p>
                 </div>
-              </button>
-              <button className="flex items-center gap-3 p-3 rounded-lg border hover:bg-accent transition-colors text-left">
-                <FileText className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-medium text-sm">Create Prescription</p>
+                <ArrowRight className="h-5 w-5 ml-auto text-medical-primary" />
+              </Button>
+              <Button 
+                variant="outline" 
+                className="h-auto p-4 justify-start hover:border-medical-secondary hover:bg-medical-secondary/5"
+                onClick={() => navigate('/prescriptions')}
+              >
+                <FileText className="h-6 w-6 text-medical-secondary mr-3 flex-shrink-0" />
+                <div className="text-left">
+                  <p className="font-semibold text-base">Create Prescription</p>
                   <p className="text-xs text-muted-foreground">Issue a new prescription</p>
                 </div>
-              </button>
-              <button className="flex items-center gap-3 p-3 rounded-lg border hover:bg-accent transition-colors text-left">
-                <Calendar className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-medium text-sm">Schedule Appointment</p>
+                <ArrowRight className="h-5 w-5 ml-auto text-medical-secondary" />
+              </Button>
+              <Button 
+                variant="outline" 
+                className="h-auto p-4 justify-start hover:border-medical-accent hover:bg-medical-accent/5"
+                onClick={() => navigate('/appointments')}
+              >
+                <Calendar className="h-6 w-6 text-medical-accent mr-3 flex-shrink-0" />
+                <div className="text-left">
+                  <p className="font-semibold text-base">Schedule Appointment</p>
                   <p className="text-xs text-muted-foreground">Book patient appointment</p>
                 </div>
-              </button>
+                <ArrowRight className="h-5 w-5 ml-auto text-medical-accent" />
+              </Button>
             </div>
           </CardContent>
         </Card>
