@@ -29,16 +29,16 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-secondary/30 via-background to-accent/20 p-4">
-      <Card className="w-full max-w-md shadow-xl">
-        <CardHeader className="space-y-1 text-center">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-medical-primary/5 via-background to-medical-secondary/5 p-4">
+      <Card className="w-full max-w-md shadow-2xl border-t-4 border-t-medical-primary">
+        <CardHeader className="space-y-1 text-center pb-8">
           <div className="flex justify-center mb-4">
-            <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <Activity className="h-8 w-8 text-primary" />
+            <div className="h-20 w-20 rounded-full bg-gradient-to-br from-medical-primary to-medical-secondary shadow-glow flex items-center justify-center">
+              <Activity className="h-10 w-10 text-white" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-          <CardDescription>Sign in to your MedicalEasy account</CardDescription>
+          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-medical-primary to-medical-secondary bg-clip-text text-transparent">Welcome Back</CardTitle>
+          <CardDescription className="text-base">Sign in to your MedicalEasy account</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -78,7 +78,7 @@ const Login = () => {
               </Link>
             </div>
 
-            <Button type="submit" className="w-full">
+            <Button type="submit" variant="medical" size="lg" className="w-full">
               Sign In
             </Button>
 
