@@ -17,15 +17,15 @@ const Login = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Mock authentication
-    if (formData.email && formData.password) {
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("userRole", "doctor");
-      toast.success("Login successful!");
-      navigate("/dashboard");
-    } else {
+    if (!formData.email || !formData.password) {
       toast.error("Please fill in all fields");
+      return;
     }
+
+    localStorage.setItem("isAuthenticated", "true");
+    localStorage.setItem("userRole", "doctor");
+    toast.success("Login successful!");
+    navigate("/dashboard");
   };
 
   return (
@@ -53,6 +53,7 @@ const Login = () => {
                   className="pl-10"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  required
                 />
               </div>
             </div>
@@ -68,6 +69,7 @@ const Login = () => {
                   className="pl-10"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  required
                 />
               </div>
             </div>

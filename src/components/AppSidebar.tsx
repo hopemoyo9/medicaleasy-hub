@@ -1,4 +1,4 @@
-import { Home, Users, FileText, Calendar, Heart, Settings, LogOut, Activity } from "lucide-react";
+import { Home, Users, FileText, Calendar, Heart, Settings, LogOut, Activity, CalendarClock } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
 import {
@@ -17,7 +17,7 @@ const menuItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Patients", url: "/patients", icon: Users },
   { title: "Prescriptions", url: "/prescriptions", icon: FileText },
-  { title: "Appointments", url: "/appointments", icon: Calendar },
+  { title: "Appointments", url: "/appointments", icon: CalendarClock },
   { title: "Donations", url: "/donations", icon: Heart },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
