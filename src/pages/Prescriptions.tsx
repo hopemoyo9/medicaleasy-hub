@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
+import { AddPrescriptionDialog } from "@/components/AddPrescriptionDialog";
 
 const Prescriptions = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -27,10 +28,7 @@ const Prescriptions = () => {
           <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-medical-secondary to-medical-accent bg-clip-text text-transparent">Prescriptions</h1>
           <p className="text-muted-foreground text-lg">Manage and track patient prescriptions</p>
         </div>
-        <Button variant="medical" size="lg">
-          <Plus className="h-5 w-5 mr-2" />
-          Create Prescription
-        </Button>
+        <AddPrescriptionDialog />
       </div>
 
       <Card className="shadow-lg border-t-4 border-t-medical-secondary">
