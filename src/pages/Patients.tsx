@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Search, Plus, MoreVertical, User } from "lucide-react";
+import { Search, User, Mail, Phone, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AddPatientDialog } from "@/components/AddPatientDialog";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -53,10 +54,7 @@ const Patients = () => {
           <h1 className="text-3xl font-bold mb-2">Patients</h1>
           <p className="text-muted-foreground">Manage and view patient records</p>
         </div>
-        <Button className="w-full sm:w-auto">
-          <Plus className="h-4 w-4 mr-2" />
-          Add New Patient
-        </Button>
+        <AddPatientDialog />
       </div>
 
       {/* Search and Filters */}

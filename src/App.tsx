@@ -9,6 +9,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Patients from "./pages/Patients";
 import Prescriptions from "./pages/Prescriptions";
+import Appointments from "./pages/Appointments";
 import DashboardLayout from "./components/DashboardLayout";
 import NotFound from "./pages/NotFound";
 
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/dashboard" element={<DashboardLayout><Dashboard /></DashboardLayout>} />
           <Route path="/patients" element={<DashboardLayout><Patients /></DashboardLayout>} />
           <Route path="/prescriptions" element={<DashboardLayout><Prescriptions /></DashboardLayout>} />
+          <Route path="/appointments" element={<DashboardLayout><Appointments /></DashboardLayout>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

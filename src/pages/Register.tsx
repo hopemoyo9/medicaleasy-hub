@@ -37,16 +37,16 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-secondary/30 via-background to-accent/20 p-4">
-      <Card className="w-full max-w-md shadow-xl">
-        <CardHeader className="space-y-1 text-center">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-medical-primary/5 via-background to-medical-secondary/5 p-4">
+      <Card className="w-full max-w-md shadow-2xl border-t-4 border-t-medical-primary">
+        <CardHeader className="space-y-1 text-center pb-6">
           <div className="flex justify-center mb-4">
-            <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <Activity className="h-8 w-8 text-primary" />
+            <div className="h-20 w-20 rounded-full bg-gradient-to-br from-medical-primary to-medical-secondary shadow-glow flex items-center justify-center">
+              <UserPlus className="h-10 w-10 text-white" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
-          <CardDescription>Join MedicalEasy healthcare network</CardDescription>
+          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-medical-primary to-medical-secondary bg-clip-text text-transparent">Create Account</CardTitle>
+          <CardDescription className="text-base">Join MedicalEasy healthcare network</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -60,6 +60,7 @@ const Register = () => {
                   className="pl-10"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  required
                 />
               </div>
             </div>
@@ -75,6 +76,7 @@ const Register = () => {
                   className="pl-10"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  required
                 />
               </div>
             </div>
@@ -95,19 +97,20 @@ const Register = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="facility">Medical Facility</Label>
+              <Label htmlFor="facility">Facility Name</Label>
               <div className="relative">
                 <Building className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="facility"
-                  placeholder="City General Hospital"
+                  placeholder="General Hospital"
                   className="pl-10"
                   value={formData.facility}
                   onChange={(e) => setFormData({ ...formData, facility: e.target.value })}
+                  required
                 />
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
@@ -119,33 +122,35 @@ const Register = () => {
                   className="pl-10"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  required
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirm-password">Confirm Password</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
-                  id="confirmPassword"
+                  id="confirm-password"
                   type="password"
                   placeholder="••••••••"
                   className="pl-10"
                   value={formData.confirmPassword}
                   onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  required
                 />
               </div>
             </div>
 
-            <Button type="submit" className="w-full">
+            <Button type="submit" variant="medical" size="lg" className="w-full">
               Create Account
             </Button>
 
             <div className="text-center text-sm text-muted-foreground">
               Already have an account?{" "}
               <Link to="/login" className="text-primary hover:underline font-medium">
-                Sign in
+                Sign in here
               </Link>
             </div>
           </form>
