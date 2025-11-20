@@ -1,5 +1,8 @@
 import { useState } from "react";
-import { Search, User, Mail, Phone, MoreVertical } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Search, User, Mail, Phone, MoreVertical, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AddPatientDialog } from "@/components/AddPatientDialog";
 import { Input } from "@/components/ui/input";
@@ -22,28 +25,36 @@ import {
 
 const Patients = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
 
-  const patients = [
-    { id: "P001", name: "Sarah Johnson", age: 45, gender: "Female", condition: "Hypertension", lastVisit: "2024-01-15", status: "Active" },
-    { id: "P002", name: "Michael Chen", age: 32, gender: "Male", condition: "Diabetes", lastVisit: "2024-01-18", status: "Active" },
-    { id: "P003", name: "Emily Davis", age: 58, gender: "Female", condition: "Arthritis", lastVisit: "2024-01-10", status: "Active" },
-    { id: "P004", name: "David Wilson", age: 67, gender: "Male", condition: "Heart Disease", lastVisit: "2024-01-20", status: "Critical" },
-    { id: "P005", name: "Lisa Anderson", age: 29, gender: "Female", condition: "Asthma", lastVisit: "2024-01-12", status: "Stable" },
-    { id: "P006", name: "James Brown", age: 41, gender: "Male", condition: "Migraine", lastVisit: "2024-01-19", status: "Active" },
-  ];
+  const { data: patients = [], isLoading } = useQuery({
+    queryKey: ['patients'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('patients')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    },
+  });
 
   const filteredPatients = patients.filter(patient =>
-    patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    patient.id.toLowerCase().includes(searchQuery.toLowerCase())
+    patient.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    patient.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (patient.email && patient.email.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Active": return "bg-success/10 text-success hover:bg-success/20";
-      case "Critical": return "bg-destructive/10 text-destructive hover:bg-destructive/20";
-      case "Stable": return "bg-primary/10 text-primary hover:bg-primary/20";
-      default: return "bg-muted";
+  const calculateAge = (dateOfBirth: string) => {
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
     }
+    return age;
   };
 
   return (
@@ -86,50 +97,70 @@ const Patients = () => {
                 <TableHead>Name</TableHead>
                 <TableHead>Age</TableHead>
                 <TableHead>Gender</TableHead>
-                <TableHead>Condition</TableHead>
-                <TableHead>Last Visit</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>Medical Notes</TableHead>
+                <TableHead>Last Updated</TableHead>
+                <TableHead>Blood Group</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredPatients.map((patient) => (
-                <TableRow key={patient.id} className="hover:bg-muted/50">
-                  <TableCell className="font-medium">{patient.id}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                        <User className="h-4 w-4 text-primary" />
-                      </div>
-                      {patient.name}
-                    </div>
-                  </TableCell>
-                  <TableCell>{patient.age}</TableCell>
-                  <TableCell>{patient.gender}</TableCell>
-                  <TableCell>{patient.condition}</TableCell>
-                  <TableCell>{patient.lastVisit}</TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(patient.status)}>
-                      {patient.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>View Details</DropdownMenuItem>
-                        <DropdownMenuItem>Edit Record</DropdownMenuItem>
-                        <DropdownMenuItem>Schedule Appointment</DropdownMenuItem>
-                        <DropdownMenuItem>Create Prescription</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                    Loading patients...
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : filteredPatients.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                    No patients found
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredPatients.map((patient) => (
+                  <TableRow key={patient.id} className="hover:bg-muted/50 cursor-pointer" onClick={() => navigate(`/patients/${patient.id}`)}>
+                    <TableCell className="font-medium">{patient.id.slice(0, 8)}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          <User className="h-4 w-4 text-primary" />
+                        </div>
+                        {patient.full_name}
+                      </div>
+                    </TableCell>
+                    <TableCell>{calculateAge(patient.date_of_birth)}</TableCell>
+                    <TableCell className="capitalize">{patient.gender}</TableCell>
+                    <TableCell>{patient.medical_notes ? patient.medical_notes.slice(0, 30) + '...' : 'N/A'}</TableCell>
+                    <TableCell>{new Date(patient.updated_at).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      <Badge className={patient.blood_group ? "bg-primary/10 text-primary" : "bg-muted"}>
+                        {patient.blood_group || 'Unknown'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => navigate(`/patients/${patient.id}`)}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(`/appointments`)}>
+                            Schedule Appointment
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(`/prescriptions`)}>
+                            Create Prescription
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>

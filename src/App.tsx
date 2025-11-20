@@ -14,6 +14,7 @@ import Donations from "./pages/Donations";
 import Settings from "./pages/Settings";
 import RoleManagement from "./pages/RoleManagement";
 import PharmacistPrescriptions from "./pages/PharmacistPrescriptions";
+import PatientDetails from "./pages/PatientDetails";
 import DashboardLayout from "./components/DashboardLayout";
 import NotFound from "./pages/NotFound";
 
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<DashboardLayout><Dashboard /></DashboardLayout>} />
           <Route path="/patients" element={<DashboardLayout><Patients /></DashboardLayout>} />
+          <Route path="/patients/:id" element={<DashboardLayout><PatientDetails /></DashboardLayout>} />
           <Route path="/prescriptions" element={<DashboardLayout><Prescriptions /></DashboardLayout>} />
           <Route path="/appointments" element={<DashboardLayout><Appointments /></DashboardLayout>} />
           <Route path="/donations" element={<DashboardLayout><Donations /></DashboardLayout>} />
