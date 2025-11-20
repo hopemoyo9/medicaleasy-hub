@@ -1,6 +1,7 @@
-import { Home, Users, FileText, Calendar, Heart, Settings, LogOut, Activity, CalendarClock } from "lucide-react";
+import { Home, Users, FileText, Calendar, Heart, Settings, LogOut, Activity, CalendarClock, Shield, Pill } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
+import { useUserRole } from "@/hooks/useUserRole";
 import {
   Sidebar,
   SidebarContent,
@@ -13,18 +14,60 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-const menuItems = [
-  { title: "Dashboard", url: "/dashboard", icon: Home },
-  { title: "Patients", url: "/patients", icon: Users },
-  { title: "Prescriptions", url: "/prescriptions", icon: FileText },
-  { title: "Appointments", url: "/appointments", icon: CalendarClock },
-  { title: "Donations", url: "/donations", icon: Heart },
-  { title: "Settings", url: "/settings", icon: Settings },
-];
-
 export function AppSidebar() {
   const { state } = useSidebar();
   const navigate = useNavigate();
+  const { role, loading } = useUserRole();
+
+  const getMenuItems = () => {
+    const baseItems = [
+      { title: "Dashboard", url: "/dashboard", icon: Home },
+    ];
+
+    if (role === 'admin') {
+      return [
+        ...baseItems,
+        { title: "Role Management", url: "/role-management", icon: Shield },
+        { title: "Patients", url: "/patients", icon: Users },
+        { title: "Appointments", url: "/appointments", icon: CalendarClock },
+        { title: "Prescriptions", url: "/prescriptions", icon: Pill },
+        { title: "Donations", url: "/donations", icon: Heart },
+        { title: "Settings", url: "/settings", icon: Settings },
+      ];
+    }
+
+    if (role === 'pharmacist') {
+      return [
+        ...baseItems,
+        { title: "Prescriptions", url: "/pharmacist-prescriptions", icon: Pill },
+        { title: "Settings", url: "/settings", icon: Settings },
+      ];
+    }
+
+    if (role === 'doctor') {
+      return [
+        ...baseItems,
+        { title: "Patients", url: "/patients", icon: Users },
+        { title: "Appointments", url: "/appointments", icon: CalendarClock },
+        { title: "Prescriptions", url: "/prescriptions", icon: Pill },
+        { title: "Settings", url: "/settings", icon: Settings },
+      ];
+    }
+
+    if (role === 'nurse') {
+      return [
+        ...baseItems,
+        { title: "Patients", url: "/patients", icon: Users },
+        { title: "Appointments", url: "/appointments", icon: CalendarClock },
+        { title: "Donations", url: "/donations", icon: Heart },
+        { title: "Settings", url: "/settings", icon: Settings },
+      ];
+    }
+
+    return baseItems;
+  };
+
+  const menuItems = getMenuItems();
 
   const handleLogout = () => {
     localStorage.removeItem("isAuthenticated");
@@ -33,6 +76,10 @@ export function AppSidebar() {
   };
 
   const isCollapsed = state === "collapsed";
+
+  if (loading) {
+    return <Sidebar collapsible="icon"><SidebarContent /></Sidebar>;
+  }
 
   return (
     <Sidebar collapsible="icon">
