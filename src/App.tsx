@@ -12,6 +12,8 @@ import Prescriptions from "./pages/Prescriptions";
 import Appointments from "./pages/Appointments";
 import Donations from "./pages/Donations";
 import Settings from "./pages/Settings";
+import RoleManagement from "./pages/RoleManagement";
+import PharmacistPrescriptions from "./pages/PharmacistPrescriptions";
 import DashboardLayout from "./components/DashboardLayout";
 import NotFound from "./pages/NotFound";
 
@@ -33,6 +35,8 @@ const App = () => (
           <Route path="/appointments" element={<DashboardLayout><Appointments /></DashboardLayout>} />
           <Route path="/donations" element={<DashboardLayout><Donations /></DashboardLayout>} />
           <Route path="/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
+          <Route path="/role-management" element={<DashboardLayout><RoleManagement /></DashboardLayout>} />
+          <Route path="/pharmacist-prescriptions" element={<DashboardLayout><PharmacistPrescriptions /></DashboardLayout>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

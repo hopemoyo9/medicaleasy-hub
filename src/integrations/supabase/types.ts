@@ -205,11 +205,17 @@ export type Database = {
           duration: string
           frequency: string
           id: string
+          medication_available: boolean | null
           medication_name: string
+          medication_substituted: boolean | null
           notes: string | null
           patient_id: string
+          pharmacist_id: string | null
+          pharmacist_notes: string | null
+          pharmacist_updated_at: string | null
           prescribed_by: string | null
           status: Database["public"]["Enums"]["prescription_status"]
+          substituted_medication: string | null
           updated_at: string
         }
         Insert: {
@@ -218,11 +224,17 @@ export type Database = {
           duration: string
           frequency: string
           id?: string
+          medication_available?: boolean | null
           medication_name: string
+          medication_substituted?: boolean | null
           notes?: string | null
           patient_id: string
+          pharmacist_id?: string | null
+          pharmacist_notes?: string | null
+          pharmacist_updated_at?: string | null
           prescribed_by?: string | null
           status?: Database["public"]["Enums"]["prescription_status"]
+          substituted_medication?: string | null
           updated_at?: string
         }
         Update: {
@@ -231,11 +243,17 @@ export type Database = {
           duration?: string
           frequency?: string
           id?: string
+          medication_available?: boolean | null
           medication_name?: string
+          medication_substituted?: boolean | null
           notes?: string | null
           patient_id?: string
+          pharmacist_id?: string | null
+          pharmacist_notes?: string | null
+          pharmacist_updated_at?: string | null
           prescribed_by?: string | null
           status?: Database["public"]["Enums"]["prescription_status"]
+          substituted_medication?: string | null
           updated_at?: string
         }
         Relationships: [
