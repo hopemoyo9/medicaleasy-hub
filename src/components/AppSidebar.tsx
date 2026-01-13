@@ -38,7 +38,7 @@ export function AppSidebar() {
 
     if (role === 'pharmacist') {
       return [
-        ...baseItems,
+        { title: "Home", url: "/pharmacist", icon: Home },
         { title: "Prescriptions", url: "/pharmacist-prescriptions", icon: Pill },
         { title: "Settings", url: "/settings", icon: Settings },
       ];
