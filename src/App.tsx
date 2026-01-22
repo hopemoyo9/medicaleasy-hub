@@ -3,6 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -23,29 +25,31 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/dashboard" element={<DashboardLayout><Dashboard /></DashboardLayout>} />
-          <Route path="/patients" element={<DashboardLayout><Patients /></DashboardLayout>} />
-          <Route path="/patients/:id" element={<DashboardLayout><PatientDetails /></DashboardLayout>} />
-          <Route path="/prescriptions" element={<DashboardLayout><Prescriptions /></DashboardLayout>} />
-          <Route path="/appointments" element={<DashboardLayout><Appointments /></DashboardLayout>} />
-          <Route path="/donations" element={<DashboardLayout><Donations /></DashboardLayout>} />
-          <Route path="/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
-          <Route path="/role-management" element={<DashboardLayout><RoleManagement /></DashboardLayout>} />
-          <Route path="/pharmacist" element={<DashboardLayout><PharmacistHome /></DashboardLayout>} />
-          <Route path="/pharmacist-prescriptions" element={<DashboardLayout><PharmacistPrescriptions /></DashboardLayout>} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout><Dashboard /></DashboardLayout></ProtectedRoute>} />
+            <Route path="/patients" element={<ProtectedRoute><DashboardLayout><Patients /></DashboardLayout></ProtectedRoute>} />
+            <Route path="/patients/:id" element={<ProtectedRoute><DashboardLayout><PatientDetails /></DashboardLayout></ProtectedRoute>} />
+            <Route path="/prescriptions" element={<ProtectedRoute><DashboardLayout><Prescriptions /></DashboardLayout></ProtectedRoute>} />
+            <Route path="/appointments" element={<ProtectedRoute><DashboardLayout><Appointments /></DashboardLayout></ProtectedRoute>} />
+            <Route path="/donations" element={<ProtectedRoute><DashboardLayout><Donations /></DashboardLayout></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><DashboardLayout><Settings /></DashboardLayout></ProtectedRoute>} />
+            <Route path="/role-management" element={<ProtectedRoute><DashboardLayout><RoleManagement /></DashboardLayout></ProtectedRoute>} />
+            <Route path="/pharmacist" element={<ProtectedRoute><DashboardLayout><PharmacistHome /></DashboardLayout></ProtectedRoute>} />
+            <Route path="/pharmacist-prescriptions" element={<ProtectedRoute><DashboardLayout><PharmacistPrescriptions /></DashboardLayout></ProtectedRoute>} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

@@ -1,25 +1,38 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Activity, Mail, Lock, User, Building, UserPlus } from "lucide-react";
+import { Mail, Lock, User, Building, UserPlus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import type { Database } from "@/integrations/supabase/types";
+
+type AppRole = Database['public']['Enums']['app_role'];
 
 const Register = () => {
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
-    role: "",
+    role: "" as AppRole | "",
     facility: ""
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (user && !authLoading) {
+      navigate("/dashboard");
+    }
+  }, [user, authLoading, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (formData.password !== formData.confirmPassword) {
@@ -27,13 +40,67 @@ const Register = () => {
       return;
     }
     
-    if (Object.values(formData).some(val => !val)) {
+    if (formData.password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    
+    if (!formData.name || !formData.email || !formData.role || !formData.facility) {
       toast.error("Please fill in all fields");
       return;
     }
 
-    toast.success("Registration successful! Please sign in.");
-    navigate("/login");
+    setIsLoading(true);
+
+    const redirectUrl = `${window.location.origin}/`;
+    
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: formData.email,
+      password: formData.password,
+      options: {
+        emailRedirectTo: redirectUrl
+      }
+    });
+
+    if (authError) {
+      toast.error(authError.message);
+      setIsLoading(false);
+      return;
+    }
+
+    if (!authData.user) {
+      toast.error("Failed to create account");
+      setIsLoading(false);
+      return;
+    }
+
+    // Create profile
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .upsert({
+        id: authData.user.id,
+        email: formData.email,
+        full_name: formData.name,
+      });
+
+    if (profileError) {
+      console.error('Profile creation error:', profileError);
+    }
+
+    // Assign role
+    const { error: roleError } = await supabase
+      .from('user_roles')
+      .insert({
+        user_id: authData.user.id,
+        role: formData.role as AppRole,
+      });
+
+    if (roleError) {
+      console.error('Role assignment error:', roleError);
+    }
+
+    toast.success("Registration successful!");
+    navigate("/dashboard");
   };
 
   return (
@@ -83,7 +150,7 @@ const Register = () => {
 
             <div className="space-y-2">
               <Label htmlFor="role">Role</Label>
-              <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
+              <Select value={formData.role} onValueChange={(value: AppRole) => setFormData({ ...formData, role: value })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select your role" />
                 </SelectTrigger>
@@ -143,8 +210,8 @@ const Register = () => {
               </div>
             </div>
 
-            <Button type="submit" variant="medical" size="lg" className="w-full">
-              Create Account
+            <Button type="submit" variant="medical" size="lg" className="w-full" disabled={isLoading}>
+              {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating Account...</> : "Create Account"}
             </Button>
 
             <div className="text-center text-sm text-muted-foreground">
