@@ -2,6 +2,7 @@ import { Home, Users, FileText, Calendar, Heart, Settings, LogOut, Activity, Cal
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Sidebar,
   SidebarContent,
@@ -18,6 +19,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const navigate = useNavigate();
   const { role, loading } = useUserRole();
+  const { signOut } = useAuth();
 
   const getMenuItems = () => {
     const baseItems = [
@@ -69,9 +71,8 @@ export function AppSidebar() {
 
   const menuItems = getMenuItems();
 
-  const handleLogout = () => {
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("userRole");
+  const handleLogout = async () => {
+    await signOut();
     navigate("/login");
   };
 
