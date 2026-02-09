@@ -1,17 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock, User, Building, UserPlus, Loader2 } from "lucide-react";
+import { Mail, Lock, User, UserPlus, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import type { Database } from "@/integrations/supabase/types";
-
-type AppRole = Database['public']['Enums']['app_role'];
 
 const Register = () => {
   const navigate = useNavigate();
@@ -22,8 +18,6 @@ const Register = () => {
     email: "",
     password: "",
     confirmPassword: "",
-    role: "" as AppRole | "",
-    facility: ""
   });
 
   useEffect(() => {
@@ -45,7 +39,7 @@ const Register = () => {
       return;
     }
     
-    if (!formData.name || !formData.email || !formData.role || !formData.facility) {
+    if (!formData.name || !formData.email) {
       toast.error("Please fill in all fields");
       return;
     }
@@ -87,20 +81,8 @@ const Register = () => {
       console.error('Profile creation error:', profileError);
     }
 
-    // Assign role
-    const { error: roleError } = await supabase
-      .from('user_roles')
-      .insert({
-        user_id: authData.user.id,
-        role: formData.role as AppRole,
-      });
-
-    if (roleError) {
-      console.error('Role assignment error:', roleError);
-    }
-
-    toast.success("Registration successful!");
-    navigate("/dashboard");
+    toast.success("Registration successful! An administrator will assign your role shortly.");
+    navigate("/login");
   };
 
   return (
@@ -149,36 +131,6 @@ const Register = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
-              <Select value={formData.role} onValueChange={(value: AppRole) => setFormData({ ...formData, role: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select your role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="doctor">Doctor</SelectItem>
-                  <SelectItem value="nurse">Nurse</SelectItem>
-                  <SelectItem value="pharmacist">Pharmacist</SelectItem>
-                  <SelectItem value="admin">Administrator</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="facility">Facility Name</Label>
-              <div className="relative">
-                <Building className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="facility"
-                  placeholder="General Hospital"
-                  className="pl-10"
-                  value={formData.facility}
-                  onChange={(e) => setFormData({ ...formData, facility: e.target.value })}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -209,6 +161,10 @@ const Register = () => {
                 />
               </div>
             </div>
+
+            <p className="text-xs text-muted-foreground text-center">
+              After registration, an administrator will assign your role and permissions.
+            </p>
 
             <Button type="submit" variant="medical" size="lg" className="w-full" disabled={isLoading}>
               {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating Account...</> : "Create Account"}
