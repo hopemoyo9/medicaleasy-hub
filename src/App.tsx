@@ -20,6 +20,7 @@ import PharmacistHome from "./pages/PharmacistHome";
 import PatientDetails from "./pages/PatientDetails";
 import DashboardLayout from "./components/DashboardLayout";
 import NotFound from "./pages/NotFound";
+import DownloadChapter4 from "./pages/DownloadChapter4";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => (
             <Route path="/role-management" element={<ProtectedRoute><DashboardLayout><RoleManagement /></DashboardLayout></ProtectedRoute>} />
             <Route path="/pharmacist" element={<ProtectedRoute><DashboardLayout><PharmacistHome /></DashboardLayout></ProtectedRoute>} />
             <Route path="/pharmacist-prescriptions" element={<ProtectedRoute><DashboardLayout><PharmacistPrescriptions /></DashboardLayout></ProtectedRoute>} />
+            <Route path="/download-chapter4" element={<DownloadChapter4 />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
