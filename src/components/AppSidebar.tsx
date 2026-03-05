@@ -1,4 +1,4 @@
-import { Home, Users, FileText, Calendar, Heart, Settings, LogOut, Activity, CalendarClock, Shield, Pill } from "lucide-react";
+import { Home, Users, FileText, Calendar, Heart, Settings, LogOut, Activity, CalendarClock, Shield, Pill, Building2 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -25,6 +25,14 @@ export function AppSidebar() {
     const baseItems = [
       { title: "Dashboard", url: "/dashboard", icon: Home },
     ];
+
+    if (role === 'super_admin') {
+      return [
+        ...baseItems,
+        { title: "Institute Approval", url: "/institute-approval", icon: Building2 },
+        { title: "Settings", url: "/settings", icon: Settings },
+      ];
+    }
 
     if (role === 'admin') {
       return [

@@ -21,6 +21,7 @@ export type Database = {
           doctor_id: string | null
           duration_minutes: number
           id: string
+          institute_id: string | null
           notes: string | null
           patient_id: string
           reason: string | null
@@ -33,6 +34,7 @@ export type Database = {
           doctor_id?: string | null
           duration_minutes?: number
           id?: string
+          institute_id?: string | null
           notes?: string | null
           patient_id: string
           reason?: string | null
@@ -45,6 +47,7 @@ export type Database = {
           doctor_id?: string | null
           duration_minutes?: number
           id?: string
+          institute_id?: string | null
           notes?: string | null
           patient_id?: string
           reason?: string | null
@@ -52,6 +55,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "appointments_institute_id_fkey"
+            columns: ["institute_id"]
+            isOneToOne: false
+            referencedRelation: "institutes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "appointments_patient_id_fkey"
             columns: ["patient_id"]
@@ -70,6 +80,7 @@ export type Database = {
           donor_name: string
           email: string | null
           id: string
+          institute_id: string | null
           notes: string | null
           phone: string
           status: Database["public"]["Enums"]["donation_status"]
@@ -84,6 +95,7 @@ export type Database = {
           donor_name: string
           email?: string | null
           id?: string
+          institute_id?: string | null
           notes?: string | null
           phone: string
           status?: Database["public"]["Enums"]["donation_status"]
@@ -98,10 +110,64 @@ export type Database = {
           donor_name?: string
           email?: string | null
           id?: string
+          institute_id?: string | null
           notes?: string | null
           phone?: string
           status?: Database["public"]["Enums"]["donation_status"]
           units?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "donations_institute_id_fkey"
+            columns: ["institute_id"]
+            isOneToOne: false
+            referencedRelation: "institutes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      institutes: {
+        Row: {
+          address: string | null
+          approved_by: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          registration_key: string
+          status: Database["public"]["Enums"]["institute_status"]
+          type: Database["public"]["Enums"]["institute_type"]
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          registration_key: string
+          status?: Database["public"]["Enums"]["institute_status"]
+          type: Database["public"]["Enums"]["institute_type"]
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          registration_key?: string
+          status?: Database["public"]["Enums"]["institute_status"]
+          type?: Database["public"]["Enums"]["institute_type"]
           updated_at?: string
         }
         Relationships: []
@@ -113,6 +179,7 @@ export type Database = {
           created_by: string | null
           diagnosed_date: string | null
           id: string
+          institute_id: string | null
           notes: string | null
           patient_id: string
           updated_at: string
@@ -123,6 +190,7 @@ export type Database = {
           created_by?: string | null
           diagnosed_date?: string | null
           id?: string
+          institute_id?: string | null
           notes?: string | null
           patient_id: string
           updated_at?: string
@@ -133,11 +201,19 @@ export type Database = {
           created_by?: string | null
           diagnosed_date?: string | null
           id?: string
+          institute_id?: string | null
           notes?: string | null
           patient_id?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "medical_history_institute_id_fkey"
+            columns: ["institute_id"]
+            isOneToOne: false
+            referencedRelation: "institutes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "medical_history_patient_id_fkey"
             columns: ["patient_id"]
@@ -160,6 +236,7 @@ export type Database = {
           full_name: string
           gender: Database["public"]["Enums"]["gender"]
           id: string
+          institute_id: string | null
           medical_notes: string | null
           phone: string | null
           updated_at: string
@@ -176,6 +253,7 @@ export type Database = {
           full_name: string
           gender: Database["public"]["Enums"]["gender"]
           id?: string
+          institute_id?: string | null
           medical_notes?: string | null
           phone?: string | null
           updated_at?: string
@@ -192,11 +270,20 @@ export type Database = {
           full_name?: string
           gender?: Database["public"]["Enums"]["gender"]
           id?: string
+          institute_id?: string | null
           medical_notes?: string | null
           phone?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "patients_institute_id_fkey"
+            columns: ["institute_id"]
+            isOneToOne: false
+            referencedRelation: "institutes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       prescriptions: {
         Row: {
@@ -205,6 +292,7 @@ export type Database = {
           duration: string
           frequency: string
           id: string
+          institute_id: string | null
           medication_available: boolean | null
           medication_name: string
           medication_substituted: boolean | null
@@ -224,6 +312,7 @@ export type Database = {
           duration: string
           frequency: string
           id?: string
+          institute_id?: string | null
           medication_available?: boolean | null
           medication_name: string
           medication_substituted?: boolean | null
@@ -243,6 +332,7 @@ export type Database = {
           duration?: string
           frequency?: string
           id?: string
+          institute_id?: string | null
           medication_available?: boolean | null
           medication_name?: string
           medication_substituted?: boolean | null
@@ -257,6 +347,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "prescriptions_institute_id_fkey"
+            columns: ["institute_id"]
+            isOneToOne: false
+            referencedRelation: "institutes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "prescriptions_patient_id_fkey"
             columns: ["patient_id"]
@@ -273,6 +370,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          institute_id: string | null
           phone: string | null
           updated_at: string
         }
@@ -282,6 +380,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          institute_id?: string | null
           phone?: string | null
           updated_at?: string
         }
@@ -291,10 +390,19 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
+          institute_id?: string | null
           phone?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_institute_id_fkey"
+            columns: ["institute_id"]
+            isOneToOne: false
+            referencedRelation: "institutes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -322,6 +430,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_institute_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -331,11 +440,13 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "doctor" | "nurse" | "pharmacist"
+      app_role: "admin" | "doctor" | "nurse" | "pharmacist" | "super_admin"
       appointment_status: "scheduled" | "completed" | "cancelled" | "no_show"
       blood_group: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-"
       donation_status: "pending" | "approved" | "completed" | "rejected"
       gender: "male" | "female" | "other"
+      institute_status: "pending" | "approved" | "rejected"
+      institute_type: "hospital" | "clinic" | "surgery" | "pharmacy"
       prescription_status: "active" | "completed" | "cancelled"
     }
     CompositeTypes: {
@@ -464,11 +575,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "doctor", "nurse", "pharmacist"],
+      app_role: ["admin", "doctor", "nurse", "pharmacist", "super_admin"],
       appointment_status: ["scheduled", "completed", "cancelled", "no_show"],
       blood_group: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
       donation_status: ["pending", "approved", "completed", "rejected"],
       gender: ["male", "female", "other"],
+      institute_status: ["pending", "approved", "rejected"],
+      institute_type: ["hospital", "clinic", "surgery", "pharmacy"],
       prescription_status: ["active", "completed", "cancelled"],
     },
   },
