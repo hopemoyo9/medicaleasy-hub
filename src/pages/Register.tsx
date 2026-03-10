@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import registerBg from "@/assets/register-bg.jpg";
 
 const INSTITUTE_TYPES = [
   { value: "hospital", label: "Hospital", icon: "🏥" },
