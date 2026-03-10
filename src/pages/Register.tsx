@@ -215,7 +215,7 @@ const Register = () => {
         style={{ backgroundImage: `url(${registerBg})` }}
       />
       <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
-      <Card className="w-full max-w-lg shadow-2xl border-t-4 border-t-medical-primary">
+      <Card className="w-full max-w-lg shadow-2xl border-t-4 border-t-medical-primary relative z-10">
         <CardHeader className="space-y-1 text-center pb-4">
           <div className="flex justify-center mb-3">
             <div className="h-16 w-16 rounded-full bg-gradient-to-br from-medical-primary to-medical-secondary shadow-glow flex items-center justify-center">
