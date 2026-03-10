@@ -11,28 +11,32 @@ const Dashboard = () => {
       value: "1,284",
       change: "+12.5%",
       icon: Users,
-      color: "text-primary"
+      color: "text-primary",
+      route: "/patients"
     },
     {
       title: "Prescriptions",
       value: "856",
       change: "+8.2%",
       icon: FileText,
-      color: "text-medical-secondary"
+      color: "text-medical-secondary",
+      route: "/prescriptions"
     },
     {
       title: "Appointments",
       value: "142",
       change: "+23.1%",
       icon: Calendar,
-      color: "text-medical-accent"
+      color: "text-medical-accent",
+      route: "/appointments"
     },
     {
       title: "Blood Donations",
       value: "48",
       change: "+5.4%",
       icon: Heart,
-      color: "text-destructive"
+      color: "text-destructive",
+      route: "/donations"
     }
   ];
 
@@ -55,7 +59,7 @@ const Dashboard = () => {
       {/* Stats Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, index) => (
-          <Card key={index} className="hover:shadow-xl hover:scale-105 transition-all duration-300 border-l-4 border-l-medical-primary bg-gradient-to-br from-card to-accent/5">
+          <Card key={index} className="hover:shadow-xl hover:scale-105 transition-all duration-300 border-l-4 border-l-medical-primary bg-gradient-to-br from-card to-accent/5 cursor-pointer" onClick={() => navigate(stat.route)}>
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
                 {stat.title}
