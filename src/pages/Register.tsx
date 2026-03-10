@@ -209,7 +209,12 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-medical-primary/5 via-background to-medical-secondary/5 p-4">
+    <div className="min-h-screen flex items-center justify-center p-4 relative">
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${registerBg})` }}
+      />
+      <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
       <Card className="w-full max-w-lg shadow-2xl border-t-4 border-t-medical-primary">
         <CardHeader className="space-y-1 text-center pb-4">
           <div className="flex justify-center mb-3">
