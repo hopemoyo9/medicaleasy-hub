@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import registerBg from "@/assets/register-bg.jpg";
 
 const INSTITUTE_TYPES = [
   { value: "hospital", label: "Hospital", icon: "🏥" },
@@ -208,8 +209,13 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-medical-primary/5 via-background to-medical-secondary/5 p-4">
-      <Card className="w-full max-w-lg shadow-2xl border-t-4 border-t-medical-primary">
+    <div className="min-h-screen flex items-center justify-center p-4 relative">
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${registerBg})` }}
+      />
+      <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
+      <Card className="w-full max-w-lg shadow-2xl border-t-4 border-t-medical-primary relative z-10">
         <CardHeader className="space-y-1 text-center pb-4">
           <div className="flex justify-center mb-3">
             <div className="h-16 w-16 rounded-full bg-gradient-to-br from-medical-primary to-medical-secondary shadow-glow flex items-center justify-center">
