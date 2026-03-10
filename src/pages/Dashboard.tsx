@@ -11,28 +11,32 @@ const Dashboard = () => {
       value: "1,284",
       change: "+12.5%",
       icon: Users,
-      color: "text-primary"
+      color: "text-primary",
+      route: "/patients"
     },
     {
       title: "Prescriptions",
       value: "856",
       change: "+8.2%",
       icon: FileText,
-      color: "text-medical-secondary"
+      color: "text-medical-secondary",
+      route: "/prescriptions"
     },
     {
       title: "Appointments",
       value: "142",
       change: "+23.1%",
       icon: Calendar,
-      color: "text-medical-accent"
+      color: "text-medical-accent",
+      route: "/appointments"
     },
     {
       title: "Blood Donations",
       value: "48",
       change: "+5.4%",
       icon: Heart,
-      color: "text-destructive"
+      color: "text-destructive",
+      route: "/donations"
     }
   ];
 
