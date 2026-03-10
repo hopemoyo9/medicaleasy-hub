@@ -59,7 +59,7 @@ const Dashboard = () => {
       {/* Stats Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, index) => (
-          <Card key={index} className="hover:shadow-xl hover:scale-105 transition-all duration-300 border-l-4 border-l-medical-primary bg-gradient-to-br from-card to-accent/5">
+          <Card key={index} className="hover:shadow-xl hover:scale-105 transition-all duration-300 border-l-4 border-l-medical-primary bg-gradient-to-br from-card to-accent/5 cursor-pointer" onClick={() => navigate(stat.route)}>
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
                 {stat.title}
