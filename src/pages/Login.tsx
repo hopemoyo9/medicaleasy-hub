@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Activity, Mail, Lock, Loader2 } from "lucide-react";
+import registerBg from "@/assets/register-bg.jpg";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -50,8 +51,13 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-medical-primary/5 via-background to-medical-secondary/5 p-4">
-      <Card className="w-full max-w-md shadow-2xl border-t-4 border-t-medical-primary">
+    <div className="min-h-screen flex items-center justify-center p-4 relative">
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${registerBg})` }}
+      />
+      <div className="absolute inset-0 bg-background/60" />
+      <Card className="w-full max-w-md shadow-2xl border-t-4 border-t-medical-primary relative z-10">
         <CardHeader className="space-y-1 text-center pb-8">
           <div className="flex justify-center mb-4">
             <div className="h-20 w-20 rounded-full bg-gradient-to-br from-medical-primary to-medical-secondary shadow-glow flex items-center justify-center">
