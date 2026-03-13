@@ -10,17 +10,17 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
-export const AddPrescriptionDialog = () => {
+export const AddAppointmentDialog = () => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     patient_id: "",
-    medication: "",
-    dosage: "",
-    duration: "",
-    frequency: "",
-    instructions: "",
+    appointment_date: "",
+    appointment_time: "",
+    duration_minutes: "30",
+    reason: "",
+    notes: "",
   });
 
   const { data: patients = [] } = useQuery({
@@ -35,7 +35,7 @@ export const AddPrescriptionDialog = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.patient_id || !formData.medication || !formData.dosage || !formData.duration || !formData.frequency) {
+    if (!formData.patient_id || !formData.appointment_date || !formData.appointment_time) {
       toast.error("Please fill in required fields");
       return;
     }
@@ -48,24 +48,25 @@ export const AddPrescriptionDialog = () => {
         return;
       }
 
-      const { error } = await supabase.from("prescriptions").insert({
+      const appointmentDateTime = `${formData.appointment_date}T${formData.appointment_time}:00`;
+
+      const { error } = await supabase.from("appointments").insert({
         patient_id: formData.patient_id,
-        medication_name: formData.medication,
-        dosage: formData.dosage,
-        duration: formData.duration,
-        frequency: formData.frequency,
-        notes: formData.instructions || null,
-        prescribed_by: user.id,
+        appointment_date: appointmentDateTime,
+        duration_minutes: parseInt(formData.duration_minutes),
+        reason: formData.reason || null,
+        notes: formData.notes || null,
+        doctor_id: user.id,
       });
 
       if (error) throw error;
 
-      toast.success("Prescription created successfully!");
-      queryClient.invalidateQueries({ queryKey: ["prescriptions"] });
+      toast.success("Appointment scheduled successfully!");
+      queryClient.invalidateQueries({ queryKey: ["appointments"] });
       setOpen(false);
-      setFormData({ patient_id: "", medication: "", dosage: "", duration: "", frequency: "", instructions: "" });
+      setFormData({ patient_id: "", appointment_date: "", appointment_time: "", duration_minutes: "30", reason: "", notes: "" });
     } catch (error: any) {
-      toast.error(error.message || "Failed to create prescription");
+      toast.error(error.message || "Failed to schedule appointment");
     } finally {
       setLoading(false);
     }
@@ -76,17 +77,17 @@ export const AddPrescriptionDialog = () => {
       <DialogTrigger asChild>
         <Button variant="medical" className="w-full sm:w-auto">
           <Plus className="h-4 w-4 mr-2" />
-          Create Prescription
+          New Appointment
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[550px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Create New Prescription</DialogTitle>
-          <DialogDescription>Enter prescription details for the patient</DialogDescription>
+          <DialogTitle>Schedule New Appointment</DialogTitle>
+          <DialogDescription>Book an appointment for a patient</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="patient">Patient *</Label>
+            <Label>Patient *</Label>
             <Select value={formData.patient_id} onValueChange={(value) => setFormData({ ...formData, patient_id: value })}>
               <SelectTrigger><SelectValue placeholder="Select a patient" /></SelectTrigger>
               <SelectContent>
@@ -96,32 +97,40 @@ export const AddPrescriptionDialog = () => {
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="medication">Medication/Drug Name *</Label>
-            <Input id="medication" value={formData.medication} onChange={(e) => setFormData({ ...formData, medication: e.target.value })} placeholder="Amoxicillin" required />
-          </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="dosage">Dosage *</Label>
-              <Input id="dosage" value={formData.dosage} onChange={(e) => setFormData({ ...formData, dosage: e.target.value })} placeholder="500mg" required />
+              <Label>Date *</Label>
+              <Input type="date" value={formData.appointment_date} onChange={(e) => setFormData({ ...formData, appointment_date: e.target.value })} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="duration">Duration *</Label>
-              <Input id="duration" value={formData.duration} onChange={(e) => setFormData({ ...formData, duration: e.target.value })} placeholder="7 days" required />
+              <Label>Time *</Label>
+              <Input type="time" value={formData.appointment_time} onChange={(e) => setFormData({ ...formData, appointment_time: e.target.value })} required />
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="frequency">Frequency *</Label>
-            <Input id="frequency" value={formData.frequency} onChange={(e) => setFormData({ ...formData, frequency: e.target.value })} placeholder="3 times daily" required />
+            <Label>Duration (minutes)</Label>
+            <Select value={formData.duration_minutes} onValueChange={(value) => setFormData({ ...formData, duration_minutes: value })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="15">15 minutes</SelectItem>
+                <SelectItem value="30">30 minutes</SelectItem>
+                <SelectItem value="45">45 minutes</SelectItem>
+                <SelectItem value="60">60 minutes</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="instructions">Special Instructions</Label>
-            <Textarea id="instructions" value={formData.instructions} onChange={(e) => setFormData({ ...formData, instructions: e.target.value })} placeholder="Take with food, avoid alcohol..." className="min-h-[80px]" />
+            <Label>Reason</Label>
+            <Input value={formData.reason} onChange={(e) => setFormData({ ...formData, reason: e.target.value })} placeholder="Consultation, Follow-up, Surgery..." />
+          </div>
+          <div className="space-y-2">
+            <Label>Notes</Label>
+            <Textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} placeholder="Additional notes..." className="min-h-[80px]" />
           </div>
           <div className="flex gap-3 pt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)} className="flex-1">Cancel</Button>
             <Button type="submit" variant="medical" className="flex-1" disabled={loading}>
-              {loading ? "Creating..." : "Create Prescription"}
+              {loading ? "Scheduling..." : "Schedule Appointment"}
             </Button>
           </div>
         </form>
