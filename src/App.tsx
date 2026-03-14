@@ -22,6 +22,7 @@ import DashboardLayout from "./components/DashboardLayout";
 import NotFound from "./pages/NotFound";
 import DownloadChapter4 from "./pages/DownloadChapter4";
 import InstituteApproval from "./pages/InstituteApproval";
+import BackendManagement from "./pages/BackendManagement";
 
 const queryClient = new QueryClient();
 
