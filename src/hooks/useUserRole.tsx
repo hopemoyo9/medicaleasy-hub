@@ -12,7 +12,7 @@ export const useUserRole = () => {
     const fetchUserRole = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        
+
         if (!user) {
           setRole(null);
           setLoading(false);
@@ -22,15 +22,19 @@ export const useUserRole = () => {
         const { data, error } = await supabase
           .from('user_roles')
           .select('role')
-          .eq('user_id', user.id)
-          .maybeSingle();
+          .eq('user_id', user.id);
 
         if (error) {
           console.error('Error fetching user role:', error);
           setRole(null);
-        } else {
-          setRole(data?.role || null);
+          return;
         }
+
+        const roles = (data ?? []).map((item) => item.role);
+        const rolePriority: AppRole[] = ['super_admin', 'admin', 'doctor', 'nurse', 'pharmacist'];
+        const effectiveRole = rolePriority.find((priorityRole) => roles.includes(priorityRole)) ?? null;
+
+        setRole(effectiveRole);
       } catch (error) {
         console.error('Error in fetchUserRole:', error);
         setRole(null);

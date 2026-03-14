@@ -55,20 +55,32 @@ const Register = () => {
     }
   }, [user, authLoading, navigate]);
 
-  // Fetch approved institutes for staff registration dropdown
-  useEffect(() => {
-    const fetchInstitutes = async () => {
-      const { data, error } = await supabase
-        .from("institutes")
-        .select("id, name, type")
-        .eq("status", "approved");
+  const fetchApprovedInstitutes = async () => {
+    const { data, error } = await supabase
+      .from("institutes")
+      .select("id, name, type")
+      .eq("status", "approved");
 
-      if (!error && data) {
-        setApprovedInstitutes(data);
-      }
+    if (error) {
+      console.error("Failed to fetch approved institutes:", error);
+      setApprovedInstitutes([]);
+      return;
+    }
+
+    setApprovedInstitutes(data || []);
+  };
+
+  // Keep institute list fresh while staff registration is open
+  useEffect(() => {
+    if (registrationType !== "staff") return;
+
+    fetchApprovedInstitutes();
+    const intervalId = window.setInterval(fetchApprovedInstitutes, 10000);
+
+    return () => {
+      window.clearInterval(intervalId);
     };
-    fetchInstitutes();
-  }, []);
+  }, [registrationType]);
 
   const handleStaffSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
