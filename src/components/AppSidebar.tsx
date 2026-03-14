@@ -29,6 +29,7 @@ export function AppSidebar() {
     if (role === 'super_admin') {
       return [
         ...baseItems,
+        { title: "Backend UI", url: "/backend-management", icon: DatabaseIcon },
         { title: "Institute Approval", url: "/institute-approval", icon: Building2 },
         { title: "Settings", url: "/settings", icon: Settings },
       ];
