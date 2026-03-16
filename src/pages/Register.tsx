@@ -262,12 +262,13 @@ const Register = () => {
                       <SelectValue placeholder="Choose your institute..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {approvedInstitutes.length === 0 ? (
-                        <SelectItem value="_none" disabled>No institutes available yet</SelectItem>
+                      {registeredInstitutes.length === 0 ? (
+                        <SelectItem value="_none" disabled>No institutes registered yet</SelectItem>
                       ) : (
-                        approvedInstitutes.map((inst) => (
+                        registeredInstitutes.map((inst) => (
                           <SelectItem key={inst.id} value={inst.id}>
-                            {INSTITUTE_TYPES.find(t => t.value === inst.type)?.icon} {inst.name}
+                            {INSTITUTE_TYPES.find((t) => t.value === inst.type)?.icon ?? "🏥"} {inst.name}
+                            {inst.status !== "approved" ? ` — ${inst.status}` : ""}
                           </SelectItem>
                         ))
                       )}
