@@ -24,7 +24,7 @@ const Register = () => {
   const { user, loading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [registrationType, setRegistrationType] = useState<"staff" | "admin">("staff");
-  const [approvedInstitutes, setApprovedInstitutes] = useState<Array<{ id: string; name: string; type: string }>>([]);
+  const [registeredInstitutes, setRegisteredInstitutes] = useState<Array<{ id: string; name: string; type: string; status: string }>>([]);
 
   // Staff registration form
   const [staffForm, setStaffForm] = useState({
@@ -55,27 +55,24 @@ const Register = () => {
     }
   }, [user, authLoading, navigate]);
 
-  const fetchApprovedInstitutes = async () => {
-    const { data, error } = await supabase
-      .from("institutes")
-      .select("id, name, type")
-      .eq("status", "approved");
+  const fetchRegisteredInstitutes = async () => {
+    const { data, error } = await supabase.functions.invoke("list-registered-institutes");
 
     if (error) {
-      console.error("Failed to fetch approved institutes:", error);
-      setApprovedInstitutes([]);
+      console.error("Failed to fetch registered institutes:", error);
+      setRegisteredInstitutes([]);
       return;
     }
 
-    setApprovedInstitutes(data || []);
+    setRegisteredInstitutes(data?.institutes || []);
   };
 
   // Keep institute list fresh while staff registration is open
   useEffect(() => {
     if (registrationType !== "staff") return;
 
-    fetchApprovedInstitutes();
-    const intervalId = window.setInterval(fetchApprovedInstitutes, 10000);
+    fetchRegisteredInstitutes();
+    const intervalId = window.setInterval(fetchRegisteredInstitutes, 10000);
 
     return () => {
       window.clearInterval(intervalId);
