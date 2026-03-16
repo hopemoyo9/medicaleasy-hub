@@ -24,7 +24,7 @@ const Register = () => {
   const { user, loading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [registrationType, setRegistrationType] = useState<"staff" | "admin">("staff");
-  const [approvedInstitutes, setApprovedInstitutes] = useState<Array<{ id: string; name: string; type: string }>>([]);
+  const [registeredInstitutes, setRegisteredInstitutes] = useState<Array<{ id: string; name: string; type: string; status: string }>>([]);
 
   // Staff registration form
   const [staffForm, setStaffForm] = useState({
@@ -55,27 +55,24 @@ const Register = () => {
     }
   }, [user, authLoading, navigate]);
 
-  const fetchApprovedInstitutes = async () => {
-    const { data, error } = await supabase
-      .from("institutes")
-      .select("id, name, type")
-      .eq("status", "approved");
+  const fetchRegisteredInstitutes = async () => {
+    const { data, error } = await supabase.functions.invoke("list-registered-institutes");
 
     if (error) {
-      console.error("Failed to fetch approved institutes:", error);
-      setApprovedInstitutes([]);
+      console.error("Failed to fetch registered institutes:", error);
+      setRegisteredInstitutes([]);
       return;
     }
 
-    setApprovedInstitutes(data || []);
+    setRegisteredInstitutes(data?.institutes || []);
   };
 
   // Keep institute list fresh while staff registration is open
   useEffect(() => {
     if (registrationType !== "staff") return;
 
-    fetchApprovedInstitutes();
-    const intervalId = window.setInterval(fetchApprovedInstitutes, 10000);
+    fetchRegisteredInstitutes();
+    const intervalId = window.setInterval(fetchRegisteredInstitutes, 10000);
 
     return () => {
       window.clearInterval(intervalId);
@@ -265,12 +262,13 @@ const Register = () => {
                       <SelectValue placeholder="Choose your institute..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {approvedInstitutes.length === 0 ? (
-                        <SelectItem value="_none" disabled>No institutes available yet</SelectItem>
+                      {registeredInstitutes.length === 0 ? (
+                        <SelectItem value="_none" disabled>No institutes registered yet</SelectItem>
                       ) : (
-                        approvedInstitutes.map((inst) => (
+                        registeredInstitutes.map((inst) => (
                           <SelectItem key={inst.id} value={inst.id}>
-                            {INSTITUTE_TYPES.find(t => t.value === inst.type)?.icon} {inst.name}
+                            {INSTITUTE_TYPES.find((t) => t.value === inst.type)?.icon ?? "🏥"} {inst.name}
+                            {inst.status !== "approved" ? ` — ${inst.status}` : ""}
                           </SelectItem>
                         ))
                       )}
