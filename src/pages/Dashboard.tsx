@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Users, FileText, Calendar, Heart, TrendingUp, Activity, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
