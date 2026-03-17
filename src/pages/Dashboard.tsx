@@ -12,6 +12,13 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { role } = useUserRole();
 
+  // Redirect pharmacists to their dedicated dashboard
+  useEffect(() => {
+    if (role === "pharmacist") {
+      navigate("/pharmacist", { replace: true });
+    }
+  }, [role, navigate]);
+
   const isAdmin = role === "admin" || role === "super_admin";
   const isDoctor = role === "doctor";
 
