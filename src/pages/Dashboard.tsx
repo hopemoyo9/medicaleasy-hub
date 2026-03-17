@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Users, FileText, Calendar, Heart, TrendingUp, Activity, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,13 @@ import DiseaseStatistics from "@/components/dashboard/DiseaseStatistics";
 const Dashboard = () => {
   const navigate = useNavigate();
   const { role } = useUserRole();
+
+  // Redirect pharmacists to their dedicated dashboard
+  useEffect(() => {
+    if (role === "pharmacist") {
+      navigate("/pharmacist", { replace: true });
+    }
+  }, [role, navigate]);
 
   const isAdmin = role === "admin" || role === "super_admin";
   const isDoctor = role === "doctor";
