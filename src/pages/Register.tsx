@@ -130,7 +130,7 @@ const Register = () => {
 
     toast.success("Registration successful! An administrator will assign your role shortly.");
     setIsLoading(false);
-    navigate("/login");
+    navigate(`/login?institute=${staffForm.instituteId}`);
   };
 
   const handleAdminSubmit = async (e: React.FormEvent) => {
@@ -214,7 +214,7 @@ const Register = () => {
       { duration: 8000 }
     );
     setIsLoading(false);
-    navigate("/login");
+    navigate(`/login?institute=${institute.id}`);
   };
 
   return (
