@@ -85,6 +85,12 @@ const Login = () => {
           </div>
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-medical-primary to-medical-secondary bg-clip-text text-transparent">Welcome Back</CardTitle>
           <CardDescription className="text-base">Sign in to your MedicalEasy account</CardDescription>
+          {instituteName && (
+            <div className="mt-3 inline-flex items-center gap-2 mx-auto px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium">
+              <Building2 className="h-4 w-4" />
+              {instituteName}
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
