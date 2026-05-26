@@ -1,354 +1,340 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { 
-  FileText, 
-  MessageSquare, 
-  Phone, 
-  Search, 
-  ArrowRight, 
-  Pill, 
-  Building2,
-  User,
-  Mail,
-  Clock,
-  CheckCircle2,
-  AlertCircle
-} from 'lucide-react';
-import { format } from 'date-fns';
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Search, Pill, Phone, Mail, User, Building2, Calendar,
+  Stethoscope, MessageSquare, Save, AlertCircle, FileText, Clock,
+} from "lucide-react";
+import { format } from "date-fns";
 
 const PharmacistHome = () => {
-  const navigate = useNavigate();
-  const [patientIdSearch, setPatientIdSearch] = useState('');
-  const [searchError, setSearchError] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const qc = useQueryClient();
 
-  // Get stats for pharmacist dashboard
-  const { data: activePrescriptions = [] } = useQuery({
-    queryKey: ['pharmacist-active-count'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('prescriptions')
-        .select('id')
-        .eq('status', 'active');
-      if (error) throw error;
-      return data;
-    },
-  });
+  const [query, setQuery] = useState("");
+  const [searched, setSearched] = useState("");
+  const [selected, setSelected] = useState<any>(null);
+  const [notes, setNotes] = useState("");
 
-  const { data: completedToday = [] } = useQuery({
-    queryKey: ['pharmacist-completed-today'],
+  // Search patients by name or ID
+  const { data: patients = [], isFetching } = useQuery({
+    queryKey: ["pharmacist-patient-search", searched],
+    enabled: !!searched.trim(),
     queryFn: async () => {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const { data, error } = await supabase
-        .from('prescriptions')
-        .select('id')
-        .eq('status', 'completed')
-        .gte('pharmacist_updated_at', today.toISOString());
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  const { data: doctorContacts = [] } = useQuery({
-    queryKey: ['doctor-contacts'],
-    queryFn: async () => {
-      const { data: userRoles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id')
-        .eq('role', 'doctor');
-      
-      if (rolesError) throw rolesError;
-      
-      const doctorIds = userRoles?.map(r => r.user_id) || [];
-      
-      if (doctorIds.length === 0) return [];
-      
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .in('id', doctorIds);
-      
+      const term = searched.trim();
+      const isUuidLike = /^[0-9a-f-]{8,}$/i.test(term);
+      const q = supabase.from("patients").select("id, full_name, phone, email, date_of_birth");
+      const { data, error } = isUuidLike
+        ? await q.or(`full_name.ilike.%${term}%,id.eq.${term}`)
+        : await q.ilike("full_name", `%${term}%`);
       if (error) throw error;
       return data || [];
     },
   });
 
-  const handlePatientSearch = async () => {
-    if (!patientIdSearch.trim()) {
-      setSearchError('Please enter a National ID number');
-      return;
-    }
-
-    setIsSearching(true);
-    setSearchError('');
-
-    try {
-      // Search for patient by checking if the ID contains the search term
-      // In a real system, you'd have a national_id field
-      const { data: patients, error } = await supabase
-        .from('patients')
-        .select('id, full_name')
-        .ilike('id', `%${patientIdSearch}%`);
-
+  // Prescriptions for selected patient
+  const { data: prescriptions = [] } = useQuery({
+    queryKey: ["pharmacist-patient-rx", selected?.id],
+    enabled: !!selected?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("prescriptions")
+        .select("*")
+        .eq("patient_id", selected.id)
+        .order("created_at", { ascending: false });
       if (error) throw error;
+      return data || [];
+    },
+  });
 
-      if (patients && patients.length > 0) {
-        // Navigate to prescriptions with patient filter
-        navigate(`/pharmacist-prescriptions?patient=${patients[0].id}`);
-      } else {
-        setSearchError('No patient found with this National ID');
-      }
-    } catch (error) {
-      setSearchError('Error searching for patient');
-    } finally {
-      setIsSearching(false);
-    }
+  // Doctor profiles lookup
+  const doctorIds = Array.from(new Set(prescriptions.map((p: any) => p.prescribed_by).filter(Boolean)));
+  const { data: doctors = [] } = useQuery({
+    queryKey: ["pharmacist-doctors", doctorIds.join(",")],
+    enabled: doctorIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, full_name, email, phone")
+        .in("id", doctorIds);
+      if (error) throw error;
+      return data || [];
+    },
+  });
+  const doctorById = (id: string) => doctors.find((d: any) => d.id === id);
+
+  const [activeRx, setActiveRx] = useState<any>(null);
+
+  const saveNotes = useMutation({
+    mutationFn: async () => {
+      if (!activeRx || !notes.trim()) throw new Error("Add a note before saving");
+
+      // 1. Update prescription with pharmacist note
+      const { error: rxErr } = await supabase
+        .from("prescriptions")
+        .update({
+          pharmacist_notes: notes,
+          pharmacist_id: user?.id,
+          pharmacist_updated_at: new Date().toISOString(),
+        })
+        .eq("id", activeRx.id);
+      if (rxErr) throw rxErr;
+
+      // 2. Append entry to patient's medical history
+      const { error: mhErr } = await supabase.from("medical_history").insert({
+        patient_id: activeRx.patient_id,
+        condition: `Pharmacist note — ${activeRx.medication_name}`,
+        notes,
+        diagnosed_date: new Date().toISOString().slice(0, 10),
+        created_by: user?.id,
+      });
+      if (mhErr) throw mhErr;
+    },
+    onSuccess: () => {
+      toast({ title: "Note saved", description: "Added to prescription and patient medical history." });
+      setNotes("");
+      qc.invalidateQueries({ queryKey: ["pharmacist-patient-rx"] });
+    },
+    onError: (e: any) => toast({ title: "Could not save note", description: e.message, variant: "destructive" }),
+  });
+
+  const handleSearch = () => {
+    setSelected(null);
+    setActiveRx(null);
+    setSearched(query);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 dark:from-green-950/20 dark:via-background dark:to-emerald-950/20">
-      {/* Patient Search Section - Before everything else */}
-      <div className="mb-8">
-        <Card className="border-2 border-green-200 dark:border-green-800 shadow-xl bg-white/80 dark:bg-card/80 backdrop-blur-sm">
-          <CardHeader className="bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-t-lg">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-white/20 rounded-lg">
-                <Search className="h-6 w-6" />
-              </div>
-              <div>
-                <CardTitle className="text-xl">Search Patient</CardTitle>
-                <CardDescription className="text-green-100">
-                  Find patient prescriptions by National ID number
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className="flex gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-3 h-5 w-5 text-green-600" />
-                <Input
-                  placeholder="Enter Patient National ID Number..."
-                  value={patientIdSearch}
-                  onChange={(e) => {
-                    setPatientIdSearch(e.target.value);
-                    setSearchError('');
-                  }}
-                  onKeyDown={(e) => e.key === 'Enter' && handlePatientSearch()}
-                  className="pl-10 h-12 text-lg border-green-200 focus:border-green-500 focus:ring-green-500"
-                />
-              </div>
-              <Button 
-                onClick={handlePatientSearch}
-                disabled={isSearching}
-                className="h-12 px-8 bg-green-600 hover:bg-green-700 text-white"
-              >
-                {isSearching ? 'Searching...' : 'Search'}
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </div>
-            {searchError && (
-              <div className="mt-3 flex items-center gap-2 text-red-600">
-                <AlertCircle className="h-4 w-4" />
-                <span className="text-sm">{searchError}</span>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Header */}
-      <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white p-6 rounded-lg mb-8 shadow-lg">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-3 bg-white/20 rounded-xl">
-            <Pill className="h-8 w-8" />
-          </div>
+    <div className="space-y-6">
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-6 rounded-xl shadow-lg">
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-white/20 rounded-xl"><Pill className="h-8 w-8" /></div>
           <div>
             <h1 className="text-3xl font-bold">Pharmacy Portal</h1>
-            <p className="text-green-100">Welcome to the Pharmacist Dashboard</p>
+            <p className="text-emerald-100">Look up a patient and process their prescriptions</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 mt-4">
-          <Building2 className="h-5 w-5 text-green-200" />
-          <span className="text-green-100">MedicalEasy General Hospital Pharmacy</span>
-          <span className="mx-2 text-green-300">|</span>
-          <Clock className="h-5 w-5 text-green-200" />
-          <span className="text-green-100">{format(new Date(), 'EEEE, MMMM dd, yyyy')}</span>
-        </div>
       </div>
 
-      {/* Stats Overview */}
-      <div className="grid gap-6 md:grid-cols-3 mb-8">
-        <Card className="border-l-4 border-l-green-500 bg-white dark:bg-card shadow-lg hover:shadow-xl transition-all">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-              Active Prescriptions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="text-4xl font-bold text-green-600">{activePrescriptions.length}</div>
-              <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
-                <FileText className="h-8 w-8 text-green-600" />
-              </div>
-            </div>
-            <p className="text-sm text-muted-foreground mt-2">Awaiting processing</p>
-          </CardContent>
-        </Card>
+      {/* Search */}
+      <Card className="border-2 border-emerald-200 dark:border-emerald-900 shadow-md">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
+            <Search className="h-5 w-5" /> Search Patient Prescription
+          </CardTitle>
+          <CardDescription>Search by patient name or National / Patient ID</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-3">
+            <Input
+              placeholder="e.g. John Doe  or  patient ID"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              className="h-12 text-base"
+            />
+            <Button onClick={handleSearch} className="h-12 px-8 bg-emerald-600 hover:bg-emerald-700">
+              <Search className="h-5 w-5 mr-2" /> Search
+            </Button>
+          </div>
 
-        <Card className="border-l-4 border-l-emerald-500 bg-white dark:bg-card shadow-lg hover:shadow-xl transition-all">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-              Processed Today
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="text-4xl font-bold text-emerald-600">{completedToday.length}</div>
-              <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
-                <CheckCircle2 className="h-8 w-8 text-emerald-600" />
-              </div>
-            </div>
-            <p className="text-sm text-muted-foreground mt-2">Completed prescriptions</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-teal-500 bg-white dark:bg-card shadow-lg hover:shadow-xl transition-all">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-              Available Doctors
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="text-4xl font-bold text-teal-600">{doctorContacts.length}</div>
-              <div className="p-3 bg-teal-100 dark:bg-teal-900/30 rounded-xl">
-                <User className="h-8 w-8 text-teal-600" />
-              </div>
-            </div>
-            <p className="text-sm text-muted-foreground mt-2">For consultation</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Quick Actions Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
-        {/* View Prescriptions */}
-        <Card className="bg-white dark:bg-card shadow-lg hover:shadow-xl transition-all cursor-pointer group border-2 border-transparent hover:border-green-300"
-              onClick={() => navigate('/pharmacist-prescriptions')}>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-4 bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 rounded-xl group-hover:scale-110 transition-transform">
-                <FileText className="h-8 w-8 text-green-600" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-green-700 dark:text-green-400">View Prescriptions</h3>
-                <p className="text-sm text-muted-foreground">View and process active prescriptions</p>
-              </div>
-              <ArrowRight className="h-6 w-6 text-green-500 group-hover:translate-x-2 transition-transform" />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Comment Bar - Add Notes */}
-        <Card className="bg-white dark:bg-card shadow-lg hover:shadow-xl transition-all cursor-pointer group border-2 border-transparent hover:border-green-300"
-              onClick={() => navigate('/pharmacist-prescriptions')}>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-4 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-xl group-hover:scale-110 transition-transform">
-                <MessageSquare className="h-8 w-8 text-emerald-600" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-emerald-700 dark:text-emerald-400">Comment Bar</h3>
-                <p className="text-sm text-muted-foreground">Add notes on prescription alterations</p>
-              </div>
-              <ArrowRight className="h-6 w-6 text-emerald-500 group-hover:translate-x-2 transition-transform" />
-            </div>
-            <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800">
-              <p className="text-xs text-amber-700 dark:text-amber-300 flex items-center gap-2">
-                <Clock className="h-3 w-3" />
-                All comments are time-stamped with pharmacy info
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Doctor's Contact Info */}
-        <Card className="bg-white dark:bg-card shadow-lg hover:shadow-xl transition-all border-2 border-transparent hover:border-green-300">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="p-4 bg-gradient-to-br from-teal-100 to-cyan-100 dark:from-teal-900/30 dark:to-cyan-900/30 rounded-xl">
-                <Phone className="h-8 w-8 text-teal-600" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-teal-700 dark:text-teal-400">Doctor's Contact Info</h3>
-                <p className="text-sm text-muted-foreground">Quick reference for prescribers</p>
-              </div>
-            </div>
-            
-            <div className="space-y-3 max-h-48 overflow-y-auto">
-              {doctorContacts.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">No doctors available</p>
+          {searched && (
+            <div className="mt-4 space-y-2">
+              {isFetching ? (
+                <p className="text-sm text-muted-foreground">Searching…</p>
+              ) : patients.length === 0 ? (
+                <div className="flex items-center gap-2 text-sm text-destructive">
+                  <AlertCircle className="h-4 w-4" /> No patient found for “{searched}”.
+                </div>
               ) : (
-                doctorContacts.map((doctor) => (
-                  <div key={doctor.id} className="p-3 bg-gray-50 dark:bg-muted/50 rounded-lg border border-gray-100 dark:border-gray-800">
-                    <div className="flex items-center gap-2 mb-2">
-                      <User className="h-4 w-4 text-green-600" />
-                      <span className="font-medium text-sm">Dr. {doctor.full_name}</span>
-                    </div>
-                    <div className="space-y-1 text-xs text-muted-foreground">
-                      <div className="flex items-center gap-2">
-                        <Mail className="h-3 w-3" />
-                        <span>{doctor.email}</span>
+                patients.map((p: any) => (
+                  <button
+                    key={p.id}
+                    onClick={() => { setSelected(p); setActiveRx(null); }}
+                    className={`w-full text-left p-3 rounded-lg border transition ${
+                      selected?.id === p.id
+                        ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40"
+                        : "hover:border-emerald-300 hover:bg-muted/40"
+                    }`}
+                  >
+                    <div className="flex justify-between">
+                      <div>
+                        <p className="font-medium">{p.full_name}</p>
+                        <p className="text-xs text-muted-foreground font-mono">{p.id}</p>
                       </div>
-                      {doctor.phone && (
-                        <div className="flex items-center gap-2">
-                          <Phone className="h-3 w-3" />
-                          <span>{doctor.phone}</span>
-                        </div>
-                      )}
+                      {p.phone && <span className="text-xs text-muted-foreground">{p.phone}</span>}
                     </div>
-                  </div>
+                  </button>
                 ))
               )}
             </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Pharmacy Information Footer */}
-      <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border-green-200 dark:border-green-800">
-        <CardContent className="p-6">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 dark:bg-green-900/50 rounded-lg">
-                <Building2 className="h-6 w-6 text-green-600" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-green-800 dark:text-green-300">MedicalEasy Pharmacy</h4>
-                <p className="text-sm text-green-600 dark:text-green-400">National Medical Network</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-6 text-sm text-green-700 dark:text-green-400">
-              <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4" />
-                <span>+1 (555) 123-4567</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4" />
-                <span>pharmacy@medicaleasy.com</span>
-              </div>
-            </div>
-          </div>
+          )}
         </CardContent>
       </Card>
+
+      {/* Patient + Prescriptions */}
+      {selected && (
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Prescription list */}
+          <Card className="lg:col-span-1 shadow-md">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <FileText className="h-4 w-4 text-emerald-600" />
+                Prescriptions for {selected.full_name}
+              </CardTitle>
+              <CardDescription>{prescriptions.length} record(s)</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2 max-h-[600px] overflow-y-auto">
+              {prescriptions.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">No prescriptions on file.</p>
+              ) : prescriptions.map((rx: any) => (
+                <button
+                  key={rx.id}
+                  onClick={() => { setActiveRx(rx); setNotes(rx.pharmacist_notes || ""); }}
+                  className={`w-full text-left p-3 rounded-lg border transition ${
+                    activeRx?.id === rx.id
+                      ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40"
+                      : "hover:border-emerald-300 hover:bg-muted/40"
+                  }`}
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-medium">{rx.medication_name}</p>
+                      <p className="text-xs text-muted-foreground">{rx.dosage} · {rx.frequency}</p>
+                    </div>
+                    <Badge variant={rx.status === "active" ? "default" : "secondary"}>{rx.status}</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {format(new Date(rx.created_at), "MMM d, yyyy")}
+                  </p>
+                </button>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* Detail */}
+          <div className="lg:col-span-2 space-y-6">
+            {!activeRx ? (
+              <Card className="shadow-md">
+                <CardContent className="py-16 text-center text-muted-foreground">
+                  <Pill className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  Select a prescription to view details
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                <Card className="shadow-md border-t-4 border-t-emerald-500">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2">
+                        <Stethoscope className="h-5 w-5 text-emerald-600" /> Prescription Details
+                      </CardTitle>
+                      <Badge variant="outline" className="font-mono">{activeRx.id.slice(0, 8)}</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-5">
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div><Label className="text-xs text-muted-foreground">Medication</Label><p className="font-medium">{activeRx.medication_name}</p></div>
+                      <div><Label className="text-xs text-muted-foreground">Dosage</Label><p className="font-medium">{activeRx.dosage}</p></div>
+                      <div><Label className="text-xs text-muted-foreground">Frequency</Label><p className="font-medium">{activeRx.frequency}</p></div>
+                      <div><Label className="text-xs text-muted-foreground">Duration</Label><p className="font-medium">{activeRx.duration}</p></div>
+                    </div>
+
+                    {activeRx.notes && (
+                      <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+                        <Label className="text-xs text-muted-foreground">Doctor's Notes</Label>
+                        <p className="text-sm mt-1">{activeRx.notes}</p>
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-3 p-3 bg-muted/40 rounded-lg text-sm">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      Prescribed on {format(new Date(activeRx.created_at), "PPP 'at' p")}
+                    </div>
+
+                    <Separator />
+
+                    {/* Doctor contact */}
+                    <div>
+                      <h3 className="font-semibold flex items-center gap-2 mb-3">
+                        <User className="h-4 w-4 text-emerald-600" /> Prescribing Doctor
+                      </h3>
+                      {(() => {
+                        const doc = activeRx.prescribed_by ? doctorById(activeRx.prescribed_by) : null;
+                        if (!doc) return <p className="text-sm text-muted-foreground">Doctor information unavailable.</p>;
+                        return (
+                          <div className="p-4 rounded-lg border bg-card space-y-2">
+                            <p className="font-medium">Dr. {doc.full_name}</p>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Mail className="h-4 w-4" /> {doc.email}
+                            </div>
+                            {doc.phone && (
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <Phone className="h-4 w-4" /> {doc.phone}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Notes */}
+                <Card className="shadow-md border-t-4 border-t-amber-500">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MessageSquare className="h-5 w-5 text-amber-600" /> Pharmacist Notes
+                    </CardTitle>
+                    <CardDescription>
+                      Document any changes to the original prescription. Saved entries are appended to the patient's medical history.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {activeRx.pharmacist_notes && (
+                      <div className="p-3 bg-muted/40 rounded-lg text-sm">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                          <Clock className="h-3 w-3" />
+                          Last updated {activeRx.pharmacist_updated_at ? format(new Date(activeRx.pharmacist_updated_at), "PPP p") : "—"}
+                        </div>
+                        <p className="whitespace-pre-wrap">{activeRx.pharmacist_notes}</p>
+                      </div>
+                    )}
+                    <Textarea
+                      placeholder="e.g. Substituted Ibuprofen 400mg with Paracetamol 500mg due to stock — patient informed."
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      rows={5}
+                    />
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Building2 className="h-3 w-3" />
+                      Entry will be stamped with your pharmacist account and the current time.
+                    </div>
+                    <Button
+                      onClick={() => saveNotes.mutate()}
+                      disabled={!notes.trim() || saveNotes.isPending}
+                      className="bg-amber-600 hover:bg-amber-700"
+                    >
+                      <Save className="h-4 w-4 mr-2" />
+                      {saveNotes.isPending ? "Saving…" : "Save Note to Medical History"}
+                    </Button>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
