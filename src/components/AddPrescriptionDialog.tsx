@@ -60,6 +60,33 @@ export const AddPrescriptionDialog = () => {
 
       if (error) throw error;
 
+      // Notify pharmacists in the same institute
+      try {
+        const { data: me } = await supabase.from("profiles").select("institute_id, full_name").eq("id", user.id).maybeSingle();
+        if (me?.institute_id) {
+          const { data: pharmRoles } = await supabase.from("user_roles").select("user_id").eq("role", "pharmacist");
+          const ids = (pharmRoles || []).map((r: any) => r.user_id);
+          if (ids.length) {
+            const { data: pharmProfiles } = await supabase
+              .from("profiles").select("id").eq("institute_id", me.institute_id).in("id", ids);
+            const targets = (pharmProfiles || []).map((p: any) => p.id);
+            if (targets.length) {
+              await supabase.from("notifications").insert(
+                targets.map((uid: string) => ({
+                  user_id: uid,
+                  institute_id: me.institute_id,
+                  title: "New prescription",
+                  body: `${me.full_name || "A doctor"} prescribed ${formData.medication}`,
+                  kind: "prescription",
+                  link: "/pharmacist-prescriptions",
+                  created_by: user.id,
+                })),
+              );
+            }
+          }
+        }
+      } catch (_) { /* non-fatal */ }
+
       toast.success("Prescription created successfully!");
       queryClient.invalidateQueries({ queryKey: ["prescriptions"] });
       setOpen(false);

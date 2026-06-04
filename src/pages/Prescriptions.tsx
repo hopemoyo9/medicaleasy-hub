@@ -1,4 +1,4 @@
-import { FileText, Search, Calendar, User, Pill } from "lucide-react";
+import { FileText, Search, Calendar, User, Pill, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AddPrescriptionDialog } from "@/components/AddPrescriptionDialog";
+import { exportToCsv } from "@/lib/exportCsv";
 
 const Prescriptions = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -48,7 +49,12 @@ const Prescriptions = () => {
           <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-medical-secondary to-medical-accent bg-clip-text text-transparent">Prescriptions</h1>
           <p className="text-muted-foreground text-lg">Manage and track patient prescriptions</p>
         </div>
-        <AddPrescriptionDialog />
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => exportToCsv("prescriptions.csv", (prescriptions as any[]).map((rx) => ({ ...rx, patient: rx.patients?.full_name })))}>
+            <Download className="h-4 w-4 mr-2" /> Export CSV
+          </Button>
+          <AddPrescriptionDialog />
+        </div>
       </div>
 
       <Card className="shadow-lg border-t-4 border-t-medical-secondary">

@@ -17,6 +17,9 @@ const Dashboard = () => {
     if (role === "pharmacist") {
       navigate("/pharmacist", { replace: true });
     }
+    if (role === "patient") {
+      navigate("/patient", { replace: true });
+    }
   }, [role, navigate]);
 
   const isAdmin = role === "admin" || role === "super_admin";

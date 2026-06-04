@@ -5,6 +5,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { NotificationsBell } from "@/components/NotificationsBell";
+import { Button } from "@/components/ui/button";
+import { MessageCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -13,6 +17,7 @@ interface DashboardLayoutProps {
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { user } = useAuth();
   const { role } = useUserRole();
+  const navigate = useNavigate();
 
   const displayName = user?.user_metadata?.full_name || user?.email || "User";
   const initials = displayName
@@ -32,6 +37,10 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             <GlobalSearch />
             <div className="flex-1" />
             <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => navigate("/chat")} title="Messages">
+                <MessageCircle className="h-5 w-5" />
+              </Button>
+              <NotificationsBell />
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-medium leading-none">{displayName}</p>
                 {role && (
