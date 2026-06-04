@@ -31,7 +31,7 @@ export const useUserRole = () => {
         }
 
         const roles = (data ?? []).map((item) => item.role);
-        const rolePriority: AppRole[] = ['super_admin', 'admin', 'doctor', 'nurse', 'pharmacist'];
+        const rolePriority: AppRole[] = ['super_admin', 'admin', 'doctor', 'nurse', 'pharmacist', 'patient'];
         const effectiveRole = rolePriority.find((priorityRole) => roles.includes(priorityRole)) ?? null;
 
         setRole(effectiveRole);
