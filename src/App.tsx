@@ -16,7 +16,6 @@ import Donations from "./pages/Donations";
 import Settings from "./pages/Settings";
 import RoleManagement from "./pages/RoleManagement";
 import PharmacistPrescriptions from "./pages/PharmacistPrescriptions";
-import PharmacistHome from "./pages/PharmacistHome";
 import PatientDetails from "./pages/PatientDetails";
 import DashboardLayout from "./components/DashboardLayout";
 import NotFound from "./pages/NotFound";
@@ -49,7 +48,7 @@ const App = () => (
             <Route path="/donations" element={<ProtectedRoute><DashboardLayout><Donations /></DashboardLayout></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><DashboardLayout><Settings /></DashboardLayout></ProtectedRoute>} />
             <Route path="/role-management" element={<ProtectedRoute><DashboardLayout><RoleManagement /></DashboardLayout></ProtectedRoute>} />
-            <Route path="/pharmacist" element={<ProtectedRoute><DashboardLayout><PharmacistHome /></DashboardLayout></ProtectedRoute>} />
+            <Route path="/pharmacist" element={<ProtectedRoute><DashboardLayout><PharmacistPrescriptions /></DashboardLayout></ProtectedRoute>} />
             <Route path="/pharmacist-prescriptions" element={<ProtectedRoute><DashboardLayout><PharmacistPrescriptions /></DashboardLayout></ProtectedRoute>} />
             <Route path="/institute-approval" element={<ProtectedRoute><DashboardLayout><InstituteApproval /></DashboardLayout></ProtectedRoute>} />
             <Route path="/backend-management" element={<ProtectedRoute><DashboardLayout><BackendManagement /></DashboardLayout></ProtectedRoute>} />
