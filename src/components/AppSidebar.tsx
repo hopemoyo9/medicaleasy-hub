@@ -52,10 +52,8 @@ export function AppSidebar() {
 
     if (role === 'pharmacist') {
       return [
-        { title: "Home", url: "/pharmacist", icon: Home },
-        { title: "Prescriptions", url: "/pharmacist-prescriptions", icon: Pill },
+        { title: "Search Prescription", url: "/pharmacist-prescriptions", icon: Pill },
         { title: "Inventory", url: "/pharmacy-inventory", icon: Package },
-        { title: "Messages", url: "/chat", icon: MessageCircle },
         { title: "Settings", url: "/settings", icon: Settings },
       ];
     }

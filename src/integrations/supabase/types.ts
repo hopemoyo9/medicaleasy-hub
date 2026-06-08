@@ -509,6 +509,9 @@ export type Database = {
       }
       profiles: {
         Row: {
+          approval_status: Database["public"]["Enums"]["profile_approval_status"]
+          approved_at: string | null
+          approved_by: string | null
           avatar_url: string | null
           created_at: string
           email: string
@@ -516,9 +519,13 @@ export type Database = {
           id: string
           institute_id: string | null
           phone: string | null
+          requested_role: Database["public"]["Enums"]["app_role"] | null
           updated_at: string
         }
         Insert: {
+          approval_status?: Database["public"]["Enums"]["profile_approval_status"]
+          approved_at?: string | null
+          approved_by?: string | null
           avatar_url?: string | null
           created_at?: string
           email: string
@@ -526,9 +533,13 @@ export type Database = {
           id: string
           institute_id?: string | null
           phone?: string | null
+          requested_role?: Database["public"]["Enums"]["app_role"] | null
           updated_at?: string
         }
         Update: {
+          approval_status?: Database["public"]["Enums"]["profile_approval_status"]
+          approved_at?: string | null
+          approved_by?: string | null
           avatar_url?: string | null
           created_at?: string
           email?: string
@@ -536,6 +547,7 @@ export type Database = {
           id?: string
           institute_id?: string | null
           phone?: string | null
+          requested_role?: Database["public"]["Enums"]["app_role"] | null
           updated_at?: string
         }
         Relationships: [
@@ -729,6 +741,7 @@ export type Database = {
       institute_status: "pending" | "approved" | "rejected"
       institute_type: "hospital" | "clinic" | "surgery" | "pharmacy"
       prescription_status: "active" | "completed" | "cancelled"
+      profile_approval_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -871,6 +884,7 @@ export const Constants = {
       institute_status: ["pending", "approved", "rejected"],
       institute_type: ["hospital", "clinic", "surgery", "pharmacy"],
       prescription_status: ["active", "completed", "cancelled"],
+      profile_approval_status: ["pending", "approved", "rejected"],
     },
   },
 } as const
