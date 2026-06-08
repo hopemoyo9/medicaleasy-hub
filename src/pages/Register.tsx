@@ -325,7 +325,7 @@ const Register = () => {
               <form onSubmit={handleAdminSubmit} className="space-y-3">
                 <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 mb-2">
                   <p className="text-xs text-primary font-medium">
-                    🏥 Register your institute with MedicalEasy. A super administrator will review and approve your registration.
+                    🏥 Register your institute with MedicalEasy. Enter the unique master key issued to your institute — the master database will authenticate it and instantly generate your institute domain (e.g. <span className="font-mono">yourname.co.zw</span>).
                   </p>
                 </div>
 
