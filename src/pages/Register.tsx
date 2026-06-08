@@ -126,6 +126,9 @@ const Register = () => {
 
     if (profileError) {
       console.error("Profile update error:", profileError);
+      toast.error("Account created but profile setup failed. Please contact support before signing in.");
+      setIsLoading(false);
+      return;
     }
 
     toast.success("Registration successful! An administrator will assign your role shortly.");
@@ -207,6 +210,9 @@ const Register = () => {
 
     if (profileError) {
       console.error("Profile update error:", profileError);
+      toast.error("Account created but profile setup failed. Please contact support before signing in.");
+      setIsLoading(false);
+      return;
     }
 
     toast.success(
