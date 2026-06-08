@@ -33,6 +33,7 @@ const Register = () => {
     password: "",
     confirmPassword: "",
     instituteId: "",
+    requestedRole: "" as "doctor" | "nurse" | "pharmacist" | "",
   });
 
   // Admin registration form
@@ -94,6 +95,10 @@ const Register = () => {
       toast.error("Please fill in all required fields");
       return;
     }
+    if (!staffForm.requestedRole) {
+      toast.error("Please select the role you are applying for");
+      return;
+    }
 
     setIsLoading(true);
 
@@ -122,7 +127,9 @@ const Register = () => {
         email: staffForm.email,
         full_name: staffForm.name,
         institute_id: staffForm.instituteId,
-      });
+        approval_status: "pending",
+        requested_role: staffForm.requestedRole,
+      } as any);
 
     if (profileError) {
       console.error("Profile update error:", profileError);
@@ -131,7 +138,10 @@ const Register = () => {
       return;
     }
 
-    toast.success("Registration successful! An administrator will assign your role shortly.");
+    toast.success(
+      "Registration submitted! Your institute's administrator will review and approve your account before you can sign in.",
+      { duration: 8000 }
+    );
     setIsLoading(false);
     navigate(`/login?institute=${staffForm.instituteId}`);
   };
@@ -283,6 +293,23 @@ const Register = () => {
                 </div>
 
                 <div className="space-y-1.5">
+                  <Label>Applying as</Label>
+                  <Select
+                    value={staffForm.requestedRole}
+                    onValueChange={(v) => setStaffForm({ ...staffForm, requestedRole: v as any })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select your role..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="doctor">👨‍⚕️ Doctor</SelectItem>
+                      <SelectItem value="nurse">👩‍⚕️ Nurse</SelectItem>
+                      <SelectItem value="pharmacist">💊 Pharmacist</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
                   <Label htmlFor="staff-email">Email</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -311,7 +338,7 @@ const Register = () => {
                 </div>
 
                 <p className="text-xs text-muted-foreground text-center">
-                  After registration, your institute's administrator will assign your role.
+                  Your account will be pending until your institute administrator approves your application.
                 </p>
 
                 <Button type="submit" variant="medical" size="lg" className="w-full" disabled={isLoading}>
