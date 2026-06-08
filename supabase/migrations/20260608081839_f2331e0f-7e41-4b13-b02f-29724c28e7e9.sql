@@ -1,0 +1,1 @@
+ALTER TABLE public.institutes ADD COLUMN IF NOT EXISTS domain TEXT UNIQUE;

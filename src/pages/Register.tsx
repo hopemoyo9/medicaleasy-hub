@@ -172,31 +172,31 @@ const Register = () => {
       return;
     }
 
-    // 2. Create the institute (pending approval)
-    const { data: institute, error: instError } = await supabase
-      .from("institutes")
-      .insert({
-        name: adminForm.instituteName,
-        type: adminForm.instituteType as any,
-        registration_key: adminForm.registrationKey,
-        status: "pending" as any,
-        phone: adminForm.institutePhone || null,
-        email: adminForm.instituteEmail || null,
-        address: adminForm.instituteAddress || null,
-        created_by: authData.user.id,
-      })
-      .select("id")
-      .single();
-
-    if (instError) {
-      if (instError.message.includes("duplicate key")) {
-        toast.error("This registration key is already in use. Please use a unique key.");
-      } else {
-        toast.error("Failed to register institute: " + instError.message);
+    // 2. Authenticate the master registration key via the master database
+    //    and auto-register the institute (approved + domain generated).
+    const { data: regData, error: regError } = await supabase.functions.invoke(
+      "register-institute",
+      {
+        body: {
+          name: adminForm.instituteName,
+          type: adminForm.instituteType,
+          registration_key: adminForm.registrationKey.trim(),
+          phone: adminForm.institutePhone,
+          email: adminForm.instituteEmail,
+          address: adminForm.instituteAddress,
+          created_by: authData.user.id,
+        },
       }
+    );
+
+    if (regError || !regData?.institute) {
+      const msg = (regData as any)?.error || regError?.message || "Failed to register institute";
+      toast.error(msg);
       setIsLoading(false);
       return;
     }
+
+    const institute = regData.institute as { id: string; name: string; domain: string };
 
     // 3. Update profile with institute_id
     const { error: profileError } = await supabase
@@ -216,8 +216,8 @@ const Register = () => {
     }
 
     toast.success(
-      "Institute registration submitted! A super administrator will review and approve your registration. You'll be notified once approved.",
-      { duration: 8000 }
+      `${institute.name} has been authenticated and registered. Your institute domain is ${institute.domain}.`,
+      { duration: 9000 }
     );
     setIsLoading(false);
     navigate(`/login?institute=${institute.id}`);
@@ -325,7 +325,7 @@ const Register = () => {
               <form onSubmit={handleAdminSubmit} className="space-y-3">
                 <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 mb-2">
                   <p className="text-xs text-primary font-medium">
-                    🏥 Register your institute with MedicalEasy. A super administrator will review and approve your registration.
+                    🏥 Register your institute with MedicalEasy. Enter the unique master key issued to your institute — the master database will authenticate it and instantly generate your institute domain (e.g. <span className="font-mono">yourname.co.zw</span>).
                   </p>
                 </div>
 
