@@ -18,13 +18,20 @@ import {
 export function AppSidebar() {
   const { state } = useSidebar();
   const navigate = useNavigate();
-  const { role, loading } = useUserRole();
+  const { role, loading, isPharmacyInstitute } = useUserRole();
   const { signOut } = useAuth();
 
   const getMenuItems = () => {
     const baseItems = [
       { title: "Dashboard", url: "/dashboard", icon: Home },
     ];
+
+    if (role === 'pharmacist' || isPharmacyInstitute) {
+      return [
+        { title: "Search Prescription", url: "/pharmacist-prescriptions", icon: Search },
+        { title: "Inventory Listing", url: "/pharmacy-inventory", icon: Package },
+      ];
+    }
 
     if (role === 'super_admin') {
       return [
@@ -47,13 +54,6 @@ export function AppSidebar() {
         { title: "Donations", url: "/donations", icon: Heart },
         { title: "Messages", url: "/chat", icon: MessageCircle },
         { title: "Settings", url: "/settings", icon: Settings },
-      ];
-    }
-
-    if (role === 'pharmacist') {
-      return [
-        { title: "Search Prescription", url: "/pharmacist-prescriptions", icon: Search },
-        { title: "Inventory Listing", url: "/pharmacy-inventory", icon: Package },
       ];
     }
 
