@@ -16,8 +16,9 @@ interface DashboardLayoutProps {
 
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { user } = useAuth();
-  const { role } = useUserRole();
+  const { role, isPharmacyInstitute } = useUserRole();
   const navigate = useNavigate();
+  const isPharmacistView = role === "pharmacist" || isPharmacyInstitute;
 
   const displayName = user?.user_metadata?.full_name || user?.email || "User";
   const initials = displayName
@@ -34,13 +35,17 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         <div className="flex-1 flex flex-col">
           <header className="h-16 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-40 flex items-center px-4 gap-4">
             <SidebarTrigger />
-            <GlobalSearch />
+            {!isPharmacistView && <GlobalSearch />}
             <div className="flex-1" />
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => navigate("/chat")} title="Messages">
-                <MessageCircle className="h-5 w-5" />
-              </Button>
-              <NotificationsBell />
+              {!isPharmacistView && (
+                <>
+                  <Button variant="ghost" size="icon" onClick={() => navigate("/chat")} title="Messages">
+                    <MessageCircle className="h-5 w-5" />
+                  </Button>
+                  <NotificationsBell />
+                </>
+              )}
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-medium leading-none">{displayName}</p>
                 {role && (

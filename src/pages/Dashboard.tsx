@@ -7,20 +7,22 @@ import { useUserRole } from "@/hooks/useUserRole";
 import DoctorSearchPanel from "@/components/dashboard/DoctorSearchPanel";
 import AdminDoctorsList from "@/components/dashboard/AdminDoctorsList";
 import DiseaseStatistics from "@/components/dashboard/DiseaseStatistics";
+import PharmacistDashboard from "./PharmacistDashboard";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { role } = useUserRole();
+  const { role, isPharmacyInstitute } = useUserRole();
 
-  // Redirect pharmacists to their dedicated dashboard
+  // Redirect patient-only users to their portal.
   useEffect(() => {
-    if (role === "pharmacist") {
-      navigate("/pharmacist", { replace: true });
-    }
     if (role === "patient") {
       navigate("/patient", { replace: true });
     }
   }, [role, navigate]);
+
+  if (role === "pharmacist" || isPharmacyInstitute) {
+    return <PharmacistDashboard />;
+  }
 
   const isAdmin = role === "admin" || role === "super_admin";
   const isDoctor = role === "doctor";
