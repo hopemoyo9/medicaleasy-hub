@@ -112,6 +112,21 @@ serve(async (request) => {
 
     if (insErr) throw insErr;
 
+    // Link the creator's profile to the institute and approve it
+    await supabase
+      .from("profiles")
+      .update({
+        institute_id: inserted.id,
+        approval_status: "approved",
+      })
+      .eq("id", created_by);
+
+    // Grant the creator a role: pharmacy institutes treat the admin as the pharmacist
+    const role = type === "pharmacy" ? "pharmacist" : "admin";
+    await supabase
+      .from("user_roles")
+      .upsert({ user_id: created_by, role }, { onConflict: "user_id,role" });
+
     return new Response(JSON.stringify({ institute: inserted }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
