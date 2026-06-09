@@ -1,4 +1,4 @@
-import { Home, Users, FileText, Calendar, Heart, Settings, LogOut, Activity, CalendarClock, Shield, Pill, Building2, Database as DatabaseIcon, Package, Scissors, MessageCircle } from "lucide-react";
+import { Home, Users, FileText, Calendar, Heart, Settings, LogOut, Activity, CalendarClock, Shield, Pill, Building2, Database as DatabaseIcon, Package, Scissors, MessageCircle, Search } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -52,7 +52,8 @@ export function AppSidebar() {
 
     if (role === 'pharmacist') {
       return [
-        { title: "Search Prescription", url: "/pharmacist-prescriptions", icon: Pill },
+        { title: "Dashboard", url: "/pharmacist", icon: Home },
+        { title: "Search Prescription", url: "/pharmacist-prescriptions", icon: Search },
         { title: "Inventory", url: "/pharmacy-inventory", icon: Package },
         { title: "Settings", url: "/settings", icon: Settings },
       ];
