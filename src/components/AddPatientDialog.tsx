@@ -42,6 +42,18 @@ export const AddPatientDialog = () => {
         return;
       }
 
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("institute_id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profileError) throw profileError;
+      if (!profile?.institute_id) {
+        toast.error("Your account is not linked to an institute yet.");
+        return;
+      }
+
       const { error } = await supabase.from("patients").insert({
         full_name: formData.full_name,
         date_of_birth: formData.date_of_birth,
@@ -54,6 +66,7 @@ export const AddPatientDialog = () => {
         emergency_phone: formData.emergency_phone || null,
         medical_notes: formData.medical_notes || null,
         created_by: user.id,
+        institute_id: profile.institute_id,
       });
 
       if (error) throw error;
