@@ -105,7 +105,14 @@ const Register = () => {
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: staffForm.email,
       password: staffForm.password,
-      options: { emailRedirectTo: `${window.location.origin}/` },
+      options: {
+        emailRedirectTo: `${window.location.origin}/`,
+        data: {
+          full_name: staffForm.name,
+          institute_id: staffForm.instituteId,
+          requested_role: staffForm.requestedRole,
+        },
+      },
     });
 
     if (authError) {
@@ -119,23 +126,21 @@ const Register = () => {
       return;
     }
 
-    // Update profile with institute_id
-    const { error: profileError } = await supabase
-      .from("profiles")
-      .upsert({
-        id: authData.user.id,
-        email: staffForm.email,
-        full_name: staffForm.name,
-        institute_id: staffForm.instituteId,
-        approval_status: "pending",
-        requested_role: staffForm.requestedRole,
-      } as any);
+    if (authData.session) {
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .upsert({
+          id: authData.user.id,
+          email: staffForm.email,
+          full_name: staffForm.name,
+          institute_id: staffForm.instituteId,
+          approval_status: "pending",
+          requested_role: staffForm.requestedRole,
+        } as any);
 
-    if (profileError) {
-      console.error("Profile update error:", profileError);
-      toast.error("Account created but profile setup failed. Please contact support before signing in.");
-      setIsLoading(false);
-      return;
+      if (profileError) {
+        console.error("Profile update error:", profileError);
+      }
     }
 
     toast.success(
@@ -168,7 +173,10 @@ const Register = () => {
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: adminForm.email,
       password: adminForm.password,
-      options: { emailRedirectTo: `${window.location.origin}/` },
+      options: {
+        emailRedirectTo: `${window.location.origin}/`,
+        data: { full_name: adminForm.name },
+      },
     });
 
     if (authError) {
@@ -208,21 +216,19 @@ const Register = () => {
 
     const institute = regData.institute as { id: string; name: string; domain: string };
 
-    // 3. Update profile with institute_id
-    const { error: profileError } = await supabase
-      .from("profiles")
-      .upsert({
-        id: authData.user.id,
-        email: adminForm.email,
-        full_name: adminForm.name,
-        institute_id: institute.id,
-      });
+    if (authData.session) {
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .upsert({
+          id: authData.user.id,
+          email: adminForm.email,
+          full_name: adminForm.name,
+          institute_id: institute.id,
+        });
 
-    if (profileError) {
-      console.error("Profile update error:", profileError);
-      toast.error("Account created but profile setup failed. Please contact support before signing in.");
-      setIsLoading(false);
-      return;
+      if (profileError) {
+        console.error("Profile update error:", profileError);
+      }
     }
 
     toast.success(
