@@ -39,17 +39,35 @@ const RoleManagement = () => {
 
   const approveMutation = useMutation({
     mutationFn: async ({ profileId, role }: { profileId: string; role: AppRole }) => {
+      // Look up the approving admin's institute so we can link the new staff member to it.
+      let approverInstituteId: string | null = null;
+      if (user?.id) {
+        const { data: approverProfile } = await supabase
+          .from('profiles')
+          .select('institute_id')
+          .eq('id', user.id)
+          .maybeSingle();
+        approverInstituteId = (approverProfile as any)?.institute_id ?? null;
+      }
+
       const { error: roleErr } = await supabase
         .from('user_roles')
         .upsert({ user_id: profileId, role } as any, { onConflict: 'user_id,role' });
       if (roleErr) throw roleErr;
+
+      const updatePayload: Record<string, unknown> = {
+        approval_status: 'approved',
+        approved_by: user?.id,
+        approved_at: new Date().toISOString(),
+      };
+      if (approverInstituteId) {
+        // Ensure the approved staff member is linked to the same institute as the approving admin.
+        updatePayload.institute_id = approverInstituteId;
+      }
+
       const { error: profErr } = await supabase
         .from('profiles')
-        .update({
-          approval_status: 'approved',
-          approved_by: user?.id,
-          approved_at: new Date().toISOString(),
-        } as any)
+        .update(updatePayload as any)
         .eq('id', profileId);
       if (profErr) throw profErr;
     },
