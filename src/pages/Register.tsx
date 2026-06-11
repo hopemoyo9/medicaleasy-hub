@@ -105,7 +105,14 @@ const Register = () => {
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: staffForm.email,
       password: staffForm.password,
-      options: { emailRedirectTo: `${window.location.origin}/` },
+      options: {
+        emailRedirectTo: `${window.location.origin}/`,
+        data: {
+          full_name: staffForm.name,
+          institute_id: staffForm.instituteId,
+          requested_role: staffForm.requestedRole,
+        },
+      },
     });
 
     if (authError) {
@@ -168,7 +175,10 @@ const Register = () => {
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: adminForm.email,
       password: adminForm.password,
-      options: { emailRedirectTo: `${window.location.origin}/` },
+      options: {
+        emailRedirectTo: `${window.location.origin}/`,
+        data: { full_name: adminForm.name },
+      },
     });
 
     if (authError) {

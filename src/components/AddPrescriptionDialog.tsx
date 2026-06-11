@@ -48,6 +48,18 @@ export const AddPrescriptionDialog = () => {
         return;
       }
 
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("institute_id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profileError) throw profileError;
+      if (!profile?.institute_id) {
+        toast.error("Your account is not linked to an institute yet. Ask your institute administrator to approve your account.");
+        return;
+      }
+
       const { error } = await supabase.from("prescriptions").insert({
         patient_id: formData.patient_id,
         medication_name: formData.medication,
@@ -56,6 +68,7 @@ export const AddPrescriptionDialog = () => {
         frequency: formData.frequency,
         notes: formData.instructions || null,
         prescribed_by: user.id,
+        institute_id: profile.institute_id,
       });
 
       if (error) throw error;
