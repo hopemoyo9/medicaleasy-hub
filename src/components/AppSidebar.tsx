@@ -1,4 +1,4 @@
-import { Home, Users, FileText, Calendar, Heart, Settings, LogOut, Activity, CalendarClock, Shield, Pill, Building2 } from "lucide-react";
+import { Home, Users, FileText, Calendar, Heart, Settings, LogOut, Activity, CalendarClock, Shield, Pill, Building2, Database as DatabaseIcon, Package, Scissors, MessageCircle, Search } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -18,7 +18,7 @@ import {
 export function AppSidebar() {
   const { state } = useSidebar();
   const navigate = useNavigate();
-  const { role, loading } = useUserRole();
+  const { role, loading, isPharmacyInstitute } = useUserRole();
   const { signOut } = useAuth();
 
   const getMenuItems = () => {
@@ -26,9 +26,17 @@ export function AppSidebar() {
       { title: "Dashboard", url: "/dashboard", icon: Home },
     ];
 
+    if (role === 'pharmacist' || isPharmacyInstitute) {
+      return [
+        { title: "Search Prescription", url: "/pharmacist-prescriptions", icon: Search },
+        { title: "Inventory Listing", url: "/pharmacy-inventory", icon: Package },
+      ];
+    }
+
     if (role === 'super_admin') {
       return [
         ...baseItems,
+        { title: "Backend UI", url: "/backend-management", icon: DatabaseIcon },
         { title: "Institute Approval", url: "/institute-approval", icon: Building2 },
         { title: "Settings", url: "/settings", icon: Settings },
       ];
@@ -41,15 +49,10 @@ export function AppSidebar() {
         { title: "Patients", url: "/patients", icon: Users },
         { title: "Appointments", url: "/appointments", icon: CalendarClock },
         { title: "Prescriptions", url: "/prescriptions", icon: Pill },
+        { title: "Pharmacy Inventory", url: "/pharmacy-inventory", icon: Package },
+        { title: "Theatre", url: "/theatre", icon: Scissors },
         { title: "Donations", url: "/donations", icon: Heart },
-        { title: "Settings", url: "/settings", icon: Settings },
-      ];
-    }
-
-    if (role === 'pharmacist') {
-      return [
-        { title: "Home", url: "/pharmacist", icon: Home },
-        { title: "Prescriptions", url: "/pharmacist-prescriptions", icon: Pill },
+        { title: "Messages", url: "/chat", icon: MessageCircle },
         { title: "Settings", url: "/settings", icon: Settings },
       ];
     }
@@ -60,6 +63,8 @@ export function AppSidebar() {
         { title: "Patients", url: "/patients", icon: Users },
         { title: "Appointments", url: "/appointments", icon: CalendarClock },
         { title: "Prescriptions", url: "/prescriptions", icon: Pill },
+        { title: "Theatre", url: "/theatre", icon: Scissors },
+        { title: "Messages", url: "/chat", icon: MessageCircle },
         { title: "Settings", url: "/settings", icon: Settings },
       ];
     }
@@ -69,7 +74,17 @@ export function AppSidebar() {
         ...baseItems,
         { title: "Patients", url: "/patients", icon: Users },
         { title: "Appointments", url: "/appointments", icon: CalendarClock },
+        { title: "Theatre", url: "/theatre", icon: Scissors },
         { title: "Donations", url: "/donations", icon: Heart },
+        { title: "Messages", url: "/chat", icon: MessageCircle },
+        { title: "Settings", url: "/settings", icon: Settings },
+      ];
+    }
+
+    if (role === 'patient') {
+      return [
+        { title: "My Health", url: "/patient", icon: Home },
+        { title: "Messages", url: "/chat", icon: MessageCircle },
         { title: "Settings", url: "/settings", icon: Settings },
       ];
     }

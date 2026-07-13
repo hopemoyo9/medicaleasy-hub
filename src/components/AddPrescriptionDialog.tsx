@@ -48,6 +48,18 @@ export const AddPrescriptionDialog = () => {
         return;
       }
 
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("institute_id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profileError) throw profileError;
+      if (!profile?.institute_id) {
+        toast.error("Your account is not linked to an institute yet. Ask your institute administrator to approve your account.");
+        return;
+      }
+
       const { error } = await supabase.from("prescriptions").insert({
         patient_id: formData.patient_id,
         medication_name: formData.medication,
@@ -56,9 +68,37 @@ export const AddPrescriptionDialog = () => {
         frequency: formData.frequency,
         notes: formData.instructions || null,
         prescribed_by: user.id,
+        institute_id: profile.institute_id,
       });
 
       if (error) throw error;
+
+      // Notify pharmacists in the same institute
+      try {
+        const { data: me } = await supabase.from("profiles").select("institute_id, full_name").eq("id", user.id).maybeSingle();
+        if (me?.institute_id) {
+          const { data: pharmRoles } = await supabase.from("user_roles").select("user_id").eq("role", "pharmacist");
+          const ids = (pharmRoles || []).map((r: any) => r.user_id);
+          if (ids.length) {
+            const { data: pharmProfiles } = await supabase
+              .from("profiles").select("id").eq("institute_id", me.institute_id).in("id", ids);
+            const targets = (pharmProfiles || []).map((p: any) => p.id);
+            if (targets.length) {
+              await supabase.from("notifications").insert(
+                targets.map((uid: string) => ({
+                  user_id: uid,
+                  institute_id: me.institute_id,
+                  title: "New prescription",
+                  body: `${me.full_name || "A doctor"} prescribed ${formData.medication}`,
+                  kind: "prescription",
+                  link: "/pharmacist-prescriptions",
+                  created_by: user.id,
+                })),
+              );
+            }
+          }
+        }
+      } catch (_) { /* non-fatal */ }
 
       toast.success("Prescription created successfully!");
       queryClient.invalidateQueries({ queryKey: ["prescriptions"] });

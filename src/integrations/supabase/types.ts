@@ -71,6 +71,44 @@ export type Database = {
           },
         ]
       }
+      chat_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          institute_id: string | null
+          read: boolean
+          recipient_id: string
+          sender_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          institute_id?: string | null
+          read?: boolean
+          recipient_id: string
+          sender_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          institute_id?: string | null
+          read?: boolean
+          recipient_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_institute_id_fkey"
+            columns: ["institute_id"]
+            isOneToOne: false
+            referencedRelation: "institutes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       donations: {
         Row: {
           blood_group: Database["public"]["Enums"]["blood_group"]
@@ -133,6 +171,7 @@ export type Database = {
           approved_by: string | null
           created_at: string
           created_by: string | null
+          domain: string | null
           email: string | null
           id: string
           name: string
@@ -147,6 +186,7 @@ export type Database = {
           approved_by?: string | null
           created_at?: string
           created_by?: string | null
+          domain?: string | null
           email?: string | null
           id?: string
           name: string
@@ -161,6 +201,7 @@ export type Database = {
           approved_by?: string | null
           created_at?: string
           created_by?: string | null
+          domain?: string | null
           email?: string | null
           id?: string
           name?: string
@@ -223,6 +264,53 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          institute_id: string | null
+          kind: string
+          link: string | null
+          read: boolean
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          institute_id?: string | null
+          kind?: string
+          link?: string | null
+          read?: boolean
+          title: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          institute_id?: string | null
+          kind?: string
+          link?: string | null
+          read?: boolean
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_institute_id_fkey"
+            columns: ["institute_id"]
+            isOneToOne: false
+            referencedRelation: "institutes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patients: {
         Row: {
           address: string | null
@@ -238,6 +326,7 @@ export type Database = {
           id: string
           institute_id: string | null
           medical_notes: string | null
+          patient_user_id: string | null
           phone: string | null
           updated_at: string
         }
@@ -255,6 +344,7 @@ export type Database = {
           id?: string
           institute_id?: string | null
           medical_notes?: string | null
+          patient_user_id?: string | null
           phone?: string | null
           updated_at?: string
         }
@@ -272,12 +362,66 @@ export type Database = {
           id?: string
           institute_id?: string | null
           medical_notes?: string | null
+          patient_user_id?: string | null
           phone?: string | null
           updated_at?: string
         }
         Relationships: [
           {
             foreignKeyName: "patients_institute_id_fkey"
+            columns: ["institute_id"]
+            isOneToOne: false
+            referencedRelation: "institutes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pharmacy_inventory: {
+        Row: {
+          created_at: string
+          expiry_date: string | null
+          id: string
+          institute_id: string
+          medication_name: string
+          notes: string | null
+          quantity: number
+          reorder_level: number
+          sku: string | null
+          unit: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          institute_id: string
+          medication_name: string
+          notes?: string | null
+          quantity?: number
+          reorder_level?: number
+          sku?: string | null
+          unit?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          institute_id?: string
+          medication_name?: string
+          notes?: string | null
+          quantity?: number
+          reorder_level?: number
+          sku?: string | null
+          unit?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pharmacy_inventory_institute_id_fkey"
             columns: ["institute_id"]
             isOneToOne: false
             referencedRelation: "institutes"
@@ -365,6 +509,9 @@ export type Database = {
       }
       profiles: {
         Row: {
+          approval_status: Database["public"]["Enums"]["profile_approval_status"]
+          approved_at: string | null
+          approved_by: string | null
           avatar_url: string | null
           created_at: string
           email: string
@@ -372,9 +519,13 @@ export type Database = {
           id: string
           institute_id: string | null
           phone: string | null
+          requested_role: Database["public"]["Enums"]["app_role"] | null
           updated_at: string
         }
         Insert: {
+          approval_status?: Database["public"]["Enums"]["profile_approval_status"]
+          approved_at?: string | null
+          approved_by?: string | null
           avatar_url?: string | null
           created_at?: string
           email: string
@@ -382,9 +533,13 @@ export type Database = {
           id: string
           institute_id?: string | null
           phone?: string | null
+          requested_role?: Database["public"]["Enums"]["app_role"] | null
           updated_at?: string
         }
         Update: {
+          approval_status?: Database["public"]["Enums"]["profile_approval_status"]
+          approved_at?: string | null
+          approved_by?: string | null
           avatar_url?: string | null
           created_at?: string
           email?: string
@@ -392,11 +547,120 @@ export type Database = {
           id?: string
           institute_id?: string | null
           phone?: string | null
+          requested_role?: Database["public"]["Enums"]["app_role"] | null
           updated_at?: string
         }
         Relationships: [
           {
             foreignKeyName: "profiles_institute_id_fkey"
+            columns: ["institute_id"]
+            isOneToOne: false
+            referencedRelation: "institutes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      theatre_bookings: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          ends_at: string
+          id: string
+          institute_id: string
+          notes: string | null
+          patient_id: string | null
+          procedure: string
+          room_id: string
+          starts_at: string
+          status: string
+          surgeon_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          ends_at: string
+          id?: string
+          institute_id: string
+          notes?: string | null
+          patient_id?: string | null
+          procedure: string
+          room_id: string
+          starts_at: string
+          status?: string
+          surgeon_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string
+          id?: string
+          institute_id?: string
+          notes?: string | null
+          patient_id?: string | null
+          procedure?: string
+          room_id?: string
+          starts_at?: string
+          status?: string
+          surgeon_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "theatre_bookings_institute_id_fkey"
+            columns: ["institute_id"]
+            isOneToOne: false
+            referencedRelation: "institutes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "theatre_bookings_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "theatre_bookings_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "theatre_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      theatre_rooms: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string | null
+          id: string
+          institute_id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          institute_id: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          institute_id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "theatre_rooms_institute_id_fkey"
             columns: ["institute_id"]
             isOneToOne: false
             referencedRelation: "institutes"
@@ -430,6 +694,29 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      dispense_medication: {
+        Args: { _inventory_id: string; _qty: number }
+        Returns: {
+          created_at: string
+          expiry_date: string | null
+          id: string
+          institute_id: string
+          medication_name: string
+          notes: string | null
+          quantity: number
+          reorder_level: number
+          sku: string | null
+          unit: string
+          updated_at: string
+          updated_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "pharmacy_inventory"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       get_user_institute_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
@@ -440,7 +727,13 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "doctor" | "nurse" | "pharmacist" | "super_admin"
+      app_role:
+        | "admin"
+        | "doctor"
+        | "nurse"
+        | "pharmacist"
+        | "super_admin"
+        | "patient"
       appointment_status: "scheduled" | "completed" | "cancelled" | "no_show"
       blood_group: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-"
       donation_status: "pending" | "approved" | "completed" | "rejected"
@@ -448,6 +741,7 @@ export type Database = {
       institute_status: "pending" | "approved" | "rejected"
       institute_type: "hospital" | "clinic" | "surgery" | "pharmacy"
       prescription_status: "active" | "completed" | "cancelled"
+      profile_approval_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -575,7 +869,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "doctor", "nurse", "pharmacist", "super_admin"],
+      app_role: [
+        "admin",
+        "doctor",
+        "nurse",
+        "pharmacist",
+        "super_admin",
+        "patient",
+      ],
       appointment_status: ["scheduled", "completed", "cancelled", "no_show"],
       blood_group: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
       donation_status: ["pending", "approved", "completed", "rejected"],
@@ -583,6 +884,7 @@ export const Constants = {
       institute_status: ["pending", "approved", "rejected"],
       institute_type: ["hospital", "clinic", "surgery", "pharmacy"],
       prescription_status: ["active", "completed", "cancelled"],
+      profile_approval_status: ["pending", "approved", "rejected"],
     },
   },
 } as const

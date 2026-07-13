@@ -8,12 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Search, UserPlus, Trash2 } from 'lucide-react';
+import { Search, UserPlus, Trash2, Check, X, Clock } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import type { Database } from '@/integrations/supabase/types';
 
 type AppRole = Database['public']['Enums']['app_role'];
 
 const RoleManagement = () => {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUser, setSelectedUser] = useState('');
   const [selectedRole, setSelectedRole] = useState<AppRole>('doctor');
@@ -31,6 +33,65 @@ const RoleManagement = () => {
       if (error) throw error;
       return data;
     },
+  });
+
+  const pendingProfiles = (profiles as any[]).filter((p) => p.approval_status === 'pending');
+
+  const approveMutation = useMutation({
+    mutationFn: async ({ profileId, role }: { profileId: string; role: AppRole }) => {
+      // Look up the approving admin's institute so we can link the new staff member to it.
+      let approverInstituteId: string | null = null;
+      if (user?.id) {
+        const { data: approverProfile } = await supabase
+          .from('profiles')
+          .select('institute_id')
+          .eq('id', user.id)
+          .maybeSingle();
+        approverInstituteId = (approverProfile as any)?.institute_id ?? null;
+      }
+
+      const { error: roleErr } = await supabase
+        .from('user_roles')
+        .upsert({ user_id: profileId, role } as any, { onConflict: 'user_id,role' });
+      if (roleErr) throw roleErr;
+
+      const updatePayload: Record<string, unknown> = {
+        approval_status: 'approved',
+        approved_by: user?.id,
+        approved_at: new Date().toISOString(),
+      };
+      if (approverInstituteId) {
+        // Ensure the approved staff member is linked to the same institute as the approving admin.
+        updatePayload.institute_id = approverInstituteId;
+      }
+
+      const { error: profErr } = await supabase
+        .from('profiles')
+        .update(updatePayload as any)
+        .eq('id', profileId);
+      if (profErr) throw profErr;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profiles'] });
+      queryClient.invalidateQueries({ queryKey: ['user-roles'] });
+      toast({ title: 'Staff approved', description: 'The user can now sign in with their assigned role.' });
+    },
+    onError: (e: any) => toast({ title: 'Approval failed', description: e.message, variant: 'destructive' }),
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: async (profileId: string) => {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ approval_status: 'rejected' } as any)
+        .eq('id', profileId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profiles'] });
+      toast({ title: 'Application rejected' });
+    },
+    onError: (e: any) => toast({ title: 'Failed', description: e.message, variant: 'destructive' }),
   });
 
   const { data: userRoles = [] } = useQuery({
@@ -139,6 +200,61 @@ const RoleManagement = () => {
         <h1 className="text-3xl font-bold">Role Management</h1>
         <p className="text-muted-foreground">Assign and manage user roles in the system</p>
       </div>
+
+      <Card className="border-l-4 border-l-amber-500">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5 text-amber-600" /> Pending Staff Approvals
+          </CardTitle>
+          <CardDescription>
+            New doctors, nurses and pharmacists awaiting your approval to access {`your institute's`} system.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {pendingProfiles.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">No pending applications.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Requested Role</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pendingProfiles.map((p) => (
+                  <TableRow key={p.id}>
+                    <TableCell className="font-medium">{p.full_name}</TableCell>
+                    <TableCell>{p.email}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="capitalize">{p.requested_role || 'unspecified'}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right space-x-2">
+                      <Button
+                        size="sm"
+                        onClick={() => approveMutation.mutate({ profileId: p.id, role: (p.requested_role || 'doctor') as AppRole })}
+                        disabled={approveMutation.isPending}
+                      >
+                        <Check className="h-4 w-4 mr-1" /> Approve as {p.requested_role || 'doctor'}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => rejectMutation.mutate(p.id)}
+                        disabled={rejectMutation.isPending}
+                      >
+                        <X className="h-4 w-4 mr-1" /> Reject
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

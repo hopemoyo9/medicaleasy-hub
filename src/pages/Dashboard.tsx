@@ -1,43 +1,37 @@
+import { useEffect } from "react";
 import { Users, FileText, Calendar, Heart, TrendingUp, Activity, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useUserRole } from "@/hooks/useUserRole";
+import DoctorSearchPanel from "@/components/dashboard/DoctorSearchPanel";
+import AdminDoctorsList from "@/components/dashboard/AdminDoctorsList";
+import DiseaseStatistics from "@/components/dashboard/DiseaseStatistics";
+import PharmacistDashboard from "./PharmacistDashboard";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const stats = [
-    {
-      title: "Total Patients",
-      value: "1,284",
-      change: "+12.5%",
-      icon: Users,
-      color: "text-primary",
-      route: "/patients"
-    },
-    {
-      title: "Prescriptions",
-      value: "856",
-      change: "+8.2%",
-      icon: FileText,
-      color: "text-medical-secondary",
-      route: "/prescriptions"
-    },
-    {
-      title: "Appointments",
-      value: "142",
-      change: "+23.1%",
-      icon: Calendar,
-      color: "text-medical-accent",
-      route: "/appointments"
-    },
-    {
-      title: "Blood Donations",
-      value: "48",
-      change: "+5.4%",
-      icon: Heart,
-      color: "text-destructive",
-      route: "/donations"
+  const { role, isPharmacyInstitute } = useUserRole();
+
+  // Redirect patient-only users to their portal.
+  useEffect(() => {
+    if (role === "patient") {
+      navigate("/patient", { replace: true });
     }
+  }, [role, navigate]);
+
+  if (role === "pharmacist" || isPharmacyInstitute) {
+    return <PharmacistDashboard />;
+  }
+
+  const isAdmin = role === "admin" || role === "super_admin";
+  const isDoctor = role === "doctor";
+
+  const stats = [
+    { title: "Total Patients", value: "1,284", change: "+12.5%", icon: Users, color: "text-primary", route: "/patients" },
+    { title: "Prescriptions", value: "856", change: "+8.2%", icon: FileText, color: "text-medical-secondary", route: "/prescriptions" },
+    { title: "Appointments", value: "142", change: "+23.1%", icon: Calendar, color: "text-medical-accent", route: "/appointments" },
+    { title: "Blood Donations", value: "48", change: "+5.4%", icon: Heart, color: "text-destructive", route: "/donations" },
   ];
 
   const recentActivity = [
@@ -45,12 +39,11 @@ const Dashboard = () => {
     { patient: "Michael Chen", action: "Prescription issued", time: "15 min ago" },
     { patient: "Emily Davis", action: "Lab results uploaded", time: "32 min ago" },
     { patient: "David Wilson", action: "Surgery scheduled", time: "1 hour ago" },
-    { patient: "Lisa Anderson", action: "Follow-up completed", time: "2 hours ago" }
+    { patient: "Lisa Anderson", action: "Follow-up completed", time: "2 hours ago" },
   ];
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
         <p className="text-muted-foreground">Welcome back! Here's what's happening today.</p>
@@ -79,7 +72,20 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {/* Recent Activity */}
+      {/* Admin-specific: Disease Stats + Doctors List */}
+      {isAdmin && (
+        <div className="grid gap-6 md:grid-cols-2">
+          <DiseaseStatistics />
+          <AdminDoctorsList />
+        </div>
+      )}
+
+      {/* Doctor-specific: Referral Search */}
+      {isDoctor && (
+        <DoctorSearchPanel />
+      )}
+
+      {/* Recent Activity + Quick Actions */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card className="border-t-4 border-t-medical-primary shadow-lg">
           <CardHeader>
@@ -111,11 +117,7 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="grid gap-4">
-              <Button 
-                variant="outline" 
-                className="h-auto p-4 justify-start hover:border-medical-primary hover:bg-medical-primary/5"
-                onClick={() => navigate('/patients')}
-              >
+              <Button variant="outline" className="h-auto p-4 justify-start hover:border-medical-primary hover:bg-medical-primary/5" onClick={() => navigate('/patients')}>
                 <Users className="h-6 w-6 text-medical-primary mr-3 flex-shrink-0" />
                 <div className="text-left">
                   <p className="font-semibold text-base">Add New Patient</p>
@@ -123,11 +125,7 @@ const Dashboard = () => {
                 </div>
                 <ArrowRight className="h-5 w-5 ml-auto text-medical-primary" />
               </Button>
-              <Button 
-                variant="outline" 
-                className="h-auto p-4 justify-start hover:border-medical-secondary hover:bg-medical-secondary/5"
-                onClick={() => navigate('/prescriptions')}
-              >
+              <Button variant="outline" className="h-auto p-4 justify-start hover:border-medical-secondary hover:bg-medical-secondary/5" onClick={() => navigate('/prescriptions')}>
                 <FileText className="h-6 w-6 text-medical-secondary mr-3 flex-shrink-0" />
                 <div className="text-left">
                   <p className="font-semibold text-base">Create Prescription</p>
@@ -135,11 +133,7 @@ const Dashboard = () => {
                 </div>
                 <ArrowRight className="h-5 w-5 ml-auto text-medical-secondary" />
               </Button>
-              <Button 
-                variant="outline" 
-                className="h-auto p-4 justify-start hover:border-medical-accent hover:bg-medical-accent/5"
-                onClick={() => navigate('/appointments')}
-              >
+              <Button variant="outline" className="h-auto p-4 justify-start hover:border-medical-accent hover:bg-medical-accent/5" onClick={() => navigate('/appointments')}>
                 <Calendar className="h-6 w-6 text-medical-accent mr-3 flex-shrink-0" />
                 <div className="text-left">
                   <p className="font-semibold text-base">Schedule Appointment</p>

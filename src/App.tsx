@@ -16,12 +16,17 @@ import Donations from "./pages/Donations";
 import Settings from "./pages/Settings";
 import RoleManagement from "./pages/RoleManagement";
 import PharmacistPrescriptions from "./pages/PharmacistPrescriptions";
-import PharmacistHome from "./pages/PharmacistHome";
+import PharmacistDashboard from "./pages/PharmacistDashboard";
 import PatientDetails from "./pages/PatientDetails";
 import DashboardLayout from "./components/DashboardLayout";
 import NotFound from "./pages/NotFound";
 import DownloadChapter4 from "./pages/DownloadChapter4";
 import InstituteApproval from "./pages/InstituteApproval";
+import BackendManagement from "./pages/BackendManagement";
+import Chat from "./pages/Chat";
+import PharmacyInventory from "./pages/PharmacyInventory";
+import Theatre from "./pages/Theatre";
+import PatientPortal from "./pages/PatientPortal";
 
 const queryClient = new QueryClient();
 
@@ -44,9 +49,14 @@ const App = () => (
             <Route path="/donations" element={<ProtectedRoute><DashboardLayout><Donations /></DashboardLayout></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><DashboardLayout><Settings /></DashboardLayout></ProtectedRoute>} />
             <Route path="/role-management" element={<ProtectedRoute><DashboardLayout><RoleManagement /></DashboardLayout></ProtectedRoute>} />
-            <Route path="/pharmacist" element={<ProtectedRoute><DashboardLayout><PharmacistHome /></DashboardLayout></ProtectedRoute>} />
+            <Route path="/pharmacist" element={<ProtectedRoute><DashboardLayout><PharmacistDashboard /></DashboardLayout></ProtectedRoute>} />
             <Route path="/pharmacist-prescriptions" element={<ProtectedRoute><DashboardLayout><PharmacistPrescriptions /></DashboardLayout></ProtectedRoute>} />
             <Route path="/institute-approval" element={<ProtectedRoute><DashboardLayout><InstituteApproval /></DashboardLayout></ProtectedRoute>} />
+            <Route path="/backend-management" element={<ProtectedRoute><DashboardLayout><BackendManagement /></DashboardLayout></ProtectedRoute>} />
+            <Route path="/chat" element={<ProtectedRoute><DashboardLayout><Chat /></DashboardLayout></ProtectedRoute>} />
+            <Route path="/pharmacy-inventory" element={<ProtectedRoute><DashboardLayout><PharmacyInventory /></DashboardLayout></ProtectedRoute>} />
+            <Route path="/theatre" element={<ProtectedRoute><DashboardLayout><Theatre /></DashboardLayout></ProtectedRoute>} />
+            <Route path="/patient" element={<ProtectedRoute><DashboardLayout><PatientPortal /></DashboardLayout></ProtectedRoute>} />
             <Route path="/download-chapter4" element={<DownloadChapter4 />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

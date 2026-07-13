@@ -2,9 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, User, Mail, Phone, MoreVertical, Eye } from "lucide-react";
+import { Search, User, Mail, Phone, MoreVertical, Eye, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AddPatientDialog } from "@/components/AddPatientDialog";
+import { exportToCsv } from "@/lib/exportCsv";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -65,7 +66,12 @@ const Patients = () => {
           <h1 className="text-3xl font-bold mb-2">Patients</h1>
           <p className="text-muted-foreground">Manage and view patient records</p>
         </div>
-        <AddPatientDialog />
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => exportToCsv("patients.csv", patients as any[])}>
+            <Download className="h-4 w-4 mr-2" /> Export CSV
+          </Button>
+          <AddPatientDialog />
+        </div>
       </div>
 
       {/* Search and Filters */}

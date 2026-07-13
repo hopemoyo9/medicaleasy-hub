@@ -42,6 +42,36 @@ export const AddPatientDialog = () => {
         return;
       }
 
+      let { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("institute_id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profileError) throw profileError;
+      if (!profile?.institute_id) {
+        // Self-heal: if this user created an institute, link their profile to it.
+        const { data: ownedInstitute } = await supabase
+          .from("institutes")
+          .select("id")
+          .eq("created_by", user.id)
+          .maybeSingle();
+
+        if (ownedInstitute?.id) {
+          const { error: linkError } = await supabase
+            .from("profiles")
+            .update({ institute_id: ownedInstitute.id } as any)
+            .eq("id", user.id);
+          if (linkError) throw linkError;
+          profile = { institute_id: ownedInstitute.id } as any;
+        } else {
+          toast.error(
+            "Your account is not linked to an institute yet. Ask your institute administrator to approve your account, or re-register through the institute sign-up flow."
+          );
+          return;
+        }
+      }
+
       const { error } = await supabase.from("patients").insert({
         full_name: formData.full_name,
         date_of_birth: formData.date_of_birth,
@@ -54,6 +84,7 @@ export const AddPatientDialog = () => {
         emergency_phone: formData.emergency_phone || null,
         medical_notes: formData.medical_notes || null,
         created_by: user.id,
+        institute_id: profile!.institute_id,
       });
 
       if (error) throw error;

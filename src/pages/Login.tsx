@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Activity, Mail, Lock, Loader2 } from "lucide-react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Activity, Mail, Lock, Loader2, Building2 } from "lucide-react";
 import registerBg from "@/assets/register-bg.jpg";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,8 +12,10 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const Login = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, loading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [instituteName, setInstituteName] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: "",
     password: ""
@@ -24,6 +26,23 @@ const Login = () => {
       navigate("/dashboard");
     }
   }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    const instituteId = searchParams.get("institute");
+    if (instituteId) {
+      const fetchInstitute = async () => {
+        const { data, error } = await supabase
+          .from("institutes")
+          .select("name")
+          .eq("id", instituteId)
+          .single();
+        if (!error && data) {
+          setInstituteName(data.name);
+        }
+      };
+      fetchInstitute();
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,6 +85,12 @@ const Login = () => {
           </div>
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-medical-primary to-medical-secondary bg-clip-text text-transparent">Welcome Back</CardTitle>
           <CardDescription className="text-base">Sign in to your MedicalEasy account</CardDescription>
+          {instituteName && (
+            <div className="mt-3 inline-flex items-center gap-2 mx-auto px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium">
+              <Building2 className="h-4 w-4" />
+              {instituteName}
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
