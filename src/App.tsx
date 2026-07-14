@@ -27,8 +27,34 @@ import Chat from "./pages/Chat";
 import PharmacyInventory from "./pages/PharmacyInventory";
 import Theatre from "./pages/Theatre";
 import PatientPortal from "./pages/PatientPortal";
+import NUSTAccessible from "./pages/NUSTAccessible";
 
 const queryClient = new QueryClient();
+
+import { useEffect } from "react";
+
+function SmoothAnchorHandler() {
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      const target = (e.target as Element).closest?.("a[href^='#']") as HTMLAnchorElement | null;
+      if (!target) return;
+      const href = target.getAttribute("href");
+      if (!href || href === "#") return; // leave plain "#" anchors alone
+      const id = href.slice(1);
+      const el = document.getElementById(id);
+      if (el) {
+        e.preventDefault();
+        el.scrollIntoView({ behavior: "smooth" });
+        try {
+          history.replaceState(null, "", href);
+        } catch {}
+      }
+    }
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, []);
+  return null;
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -36,9 +62,10 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <SmoothAnchorHandler />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Landing />} />
+            <Route path="/" element={<NUSTAccessible />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout><Dashboard /></DashboardLayout></ProtectedRoute>} />
@@ -58,6 +85,7 @@ const App = () => (
             <Route path="/theatre" element={<ProtectedRoute><DashboardLayout><Theatre /></DashboardLayout></ProtectedRoute>} />
             <Route path="/patient" element={<ProtectedRoute><DashboardLayout><PatientPortal /></DashboardLayout></ProtectedRoute>} />
             <Route path="/download-chapter4" element={<DownloadChapter4 />} />
+            <Route path="/nu-st-accessible" element={<NUSTAccessible />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

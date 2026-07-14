@@ -354,9 +354,9 @@ const Landing = () => {
           </div>
           <p>&copy; 2024 MedicalEasy. All rights reserved.</p>
           <div className="flex gap-4">
-            <a href="#" className="hover:text-primary transition-colors">Privacy</a>
-            <a href="#" className="hover:text-primary transition-colors">Terms</a>
-            <a href="#" className="hover:text-primary transition-colors">Contact</a>
+            <Link to="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
+            <Link to="/terms" className="hover:text-primary transition-colors">Terms</Link>
+            <Link to="/contact" className="hover:text-primary transition-colors">Contact</Link>
           </div>
         </div>
       </footer>

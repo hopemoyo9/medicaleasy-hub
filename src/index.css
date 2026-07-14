@@ -169,9 +169,43 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+  }
+
+  body.accessibility-high-contrast {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 100%;
+    --primary: 56 100% 50%;
+    --primary-foreground: 0 0% 0%;
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 100%;
+    --border: 0 0% 100%;
+    --input: 0 0% 100%;
+    --ring: 56 100% 50%;
+  }
+
+  body.accessibility-large-text {
+    font-size: 112.5%;
+  }
+
+  body.accessibility-reduced-motion * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  a, button, input, select, textarea {
+    min-height: 44px;
   }
 
   @keyframes fade-in {
